@@ -30,7 +30,7 @@ func (f *Frequency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 	err := d.DecodeElement(v, &start)
 	if err != nil {
-		return fmt.Errorf("failed to decode Location: %w", err)
+		return fmt.Errorf("failed to decode Frequency: %w", err)
 	}
 
 	if *v != FrequencyAlways &&
