@@ -35,7 +35,7 @@ func Fetch(url string) (Sitemap, error) {
 
 		for i := range urls {
 
-			s, err := Fetch(urls[i].String())
+			s, err := Fetch(urls[i].Loc.String())
 			if err != nil {
 				return nil, err
 			}
