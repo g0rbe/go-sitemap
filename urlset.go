@@ -38,7 +38,3 @@ func UnmarshalURLSet(data []byte) (URLSet, error) {
 
 	return v.URLs, err
 }
-
-func (us URLSet) URLs() []URL {
-	return []URL(us)
-}
