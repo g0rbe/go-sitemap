@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/url"
+	"strings"
 )
 
 // Location type used for the loc field
@@ -23,7 +24,7 @@ func (l *Location) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		return fmt.Errorf("failed to decode Location: %w", err)
 	}
 
-	v, err := url.Parse(*u)
+	v, err := url.Parse(strings.TrimSpace(*u))
 	if err != nil {
 		return fmt.Errorf("failed to parse Location %s: %w", *u, err)
 	}
