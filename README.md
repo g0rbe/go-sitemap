@@ -1,7 +1,6 @@
 # go-sitemap
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/g0rbe/go-sitemap)](https://goreportcard.com/report/github.com/g0rbe/go-sitemap)
-
 [![Go Reference](https://pkg.go.dev/badge/github.com/g0rbe/go-sitemap.svg)](https://pkg.go.dev/github.com/g0rbe/go-sitemap)
 
 Golang module to work with Sitemaps 
