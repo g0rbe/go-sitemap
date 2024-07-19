@@ -18,13 +18,13 @@ func download(url string) ([]byte, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("http error at %s: %w", url, err)
+		return nil, fmt.Errorf("http error: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Check response code
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("http error at %s: %s", url, resp.Status)
+		return nil, fmt.Errorf(resp.Status)
 	}
 
 	// Check Content-Type
@@ -47,7 +47,7 @@ func download(url string) ([]byte, error) {
 
 	default:
 
-		return nil, fmt.Errorf("invalid content type at %s: %s", url, resp.Header.Get("content-type"))
+		return nil, fmt.Errorf("invalid content type: %s", resp.Header.Get("content-type"))
 	}
 
 }
