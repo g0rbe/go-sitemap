@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func download(url string) ([]byte, error) {
@@ -23,7 +24,13 @@ func download(url string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	// Check response code
-	if resp.StatusCode != 200 {
+	switch resp.StatusCode {
+	case 200:
+		break
+	case 429:
+		time.Sleep(10 * time.Second)
+		return download(url)
+	default:
 		return nil, fmt.Errorf(resp.Status)
 	}
 
