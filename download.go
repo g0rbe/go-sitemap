@@ -31,11 +31,14 @@ func download(url string) ([]byte, error) {
 	contentType, _, _ := strings.Cut(resp.Header.Get("content-type"), ";")
 
 	switch true {
-	case contentType == "application/xml", contentType == "text/xml", contentType == "application/atom+xml":
+	case contentType == "application/xml",
+		contentType == "text/xml",
+		contentType == "application/atom+xml":
 
 		return io.ReadAll(resp.Body)
 
-	case contentType == "application/x-gzip", contentType == "application/octet-stream" && strings.HasSuffix(url, ".gz"):
+	case contentType == "application/x-gzip",
+		contentType == "application/octet-stream" && strings.HasSuffix(url, ".gz"):
 
 		data, err := gzip.NewReader(resp.Body)
 		if err != nil {
