@@ -30,12 +30,12 @@ func download(url string) ([]byte, error) {
 	// Check Content-Type
 	contentType, _, _ := strings.Cut(resp.Header.Get("content-type"), ";")
 
-	switch contentType {
-	case "application/xml", "text/xml", "application/atom+xml":
+	switch true {
+	case contentType == "application/xml", contentType == "text/xml", contentType == "application/atom+xml":
 
 		return io.ReadAll(resp.Body)
 
-	case "application/x-gzip":
+	case contentType == "application/x-gzip", contentType == "application/octet-stream" && strings.HasSuffix(url, ".gz"):
 
 		data, err := gzip.NewReader(resp.Body)
 		if err != nil {
