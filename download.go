@@ -2,11 +2,15 @@ package sitemap
 
 import (
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
-	"time"
+)
+
+var (
+	ErrorTooManyRequests = errors.New("429 Too Many Requests")
 )
 
 func download(url string) ([]byte, error) {
@@ -29,8 +33,8 @@ func download(url string) ([]byte, error) {
 		break
 	case 429:
 		// TODO: Use Retry-After header
-		time.Sleep(10 * time.Second)
-		return download(url)
+		//time.Sleep(10 * time.Second)
+		return nil, ErrorTooManyRequests
 	default:
 		return nil, fmt.Errorf(resp.Status)
 	}
