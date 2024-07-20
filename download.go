@@ -28,6 +28,7 @@ func download(url string) ([]byte, error) {
 	case 200:
 		break
 	case 429:
+		// TODO: Use Retry-After header
 		time.Sleep(10 * time.Second)
 		return download(url)
 	default:
