@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // Priority type used for the priority field
@@ -22,6 +23,8 @@ func (p *Priority) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	if err != nil {
 		return fmt.Errorf("failed to decode Priority: %w", err)
 	}
+
+	*s = strings.TrimSpace(*s)
 
 	f, err := strconv.ParseFloat(*s, 64)
 	if err != nil {

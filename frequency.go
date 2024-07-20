@@ -3,6 +3,7 @@ package sitemap
 import (
 	"encoding/xml"
 	"fmt"
+	"strings"
 )
 
 // Frequency type used for the freq field
@@ -32,6 +33,8 @@ func (f *Frequency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	if err != nil {
 		return fmt.Errorf("failed to decode Frequency: %w", err)
 	}
+
+	*v = strings.TrimSpace(*v)
 
 	if *v != FrequencyAlways &&
 		*v != FrequencyHourly &&

@@ -3,6 +3,7 @@ package sitemap
 import (
 	"encoding/xml"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,7 @@ func (t *Time) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		return fmt.Errorf("failed to decode Time: %w", err)
 	}
 
+	*s = strings.TrimSpace(*s)
 	var layout string
 
 	switch len(*s) {
