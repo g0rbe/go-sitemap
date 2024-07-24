@@ -33,11 +33,11 @@ func FetchIndex(url string) (*Index, error) {
 	return v, err
 }
 
-func (i *Index) Sitemaps() []URL {
+func (i *Index) URLs() []URL {
 	return i.sitemaps
 }
 
-func (i *Index) Locations() []string {
+func (i *Index) Sitemaps() []string {
 
 	v := make([]string, 0, len(i.sitemaps))
 

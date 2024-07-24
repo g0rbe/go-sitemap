@@ -49,7 +49,7 @@ func FetchSitemaps(urls []string) (*Sitemap, error) {
 			return s, fmt.Errorf("failed to fetch \"%s\": %w", urls[i], err)
 		}
 
-		s.AddPages(v.urls)
+		s.AddURLs(v.urls)
 	}
 
 	return s, nil
@@ -81,7 +81,7 @@ func Fetch(url string) (*Sitemap, error) {
 		if err != nil {
 			return nil, err
 		}
-		return FetchSitemaps(v.Locations())
+		return FetchSitemaps(v.Sitemaps())
 
 	default:
 
@@ -89,16 +89,26 @@ func Fetch(url string) (*Sitemap, error) {
 	}
 }
 
+func (s *Sitemap) URLs() []URL {
+	return s.urls
+}
+
+func (s *Sitemap) AddURLs(u []URL) {
+	s.urls = append(s.urls, u...)
+}
+
 func (s *Sitemap) NumPages() int {
 	return len(s.urls)
 }
 
-func (s *Sitemap) Pages() []URL {
-	return s.urls
-}
+func (s *Sitemap) Pages() []string {
+	v := make([]string, 0, len(s.urls))
 
-func (s *Sitemap) AddPages(u []URL) {
-	s.urls = append(s.urls, u...)
+	for i := range s.urls {
+		v = append(v, s.urls[i].Loc.String())
+	}
+
+	return v
 }
 
 func (s *Sitemap) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
