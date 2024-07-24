@@ -15,9 +15,7 @@ const (
 )
 
 var (
-	ErrInvalidFormat      = errors.New("invalid format")
-	ErrURLSetFormat       = errors.New("urlset format")
-	ErrSitemapIndexFormat = errors.New("sitemapindex format")
+	ErrInvalidFormat = errors.New("invalid format")
 )
 
 func (f Format) String() string {
