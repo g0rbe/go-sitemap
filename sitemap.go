@@ -1,76 +1,131 @@
 package sitemap
 
-import "fmt"
+import (
+	"encoding/xml"
+	"errors"
+	"fmt"
+)
 
-type Sitemap []URL
+var (
+	ErrNotURLSet = errors.New("not urlset")
+)
 
-// Fetch downloads the Sitemap XML from the given URL and returns a slice of URLs.
-// If the sitemap on the given URL is an index, recursively fetch the the URL the get the URLs.
-func Fetch(url string) (Sitemap, error) {
+type Sitemap struct {
+	urls []URL
+}
+
+func NewSitemap(urls []URL) *Sitemap {
+	v := new(Sitemap)
+
+	if len(urls) > 0 {
+		v.urls = append(v.urls, urls...)
+	}
+
+	return v
+}
+
+func FetchSitemap(url string) (*Sitemap, error) {
 
 	data, err := download(url)
 	if err != nil {
 		return nil, err
 	}
 
-	f, err := GetFormat(data)
-	if err != nil {
-		return nil, fmt.Errorf("format error: %w", err)
+	v := new(Sitemap)
+
+	err = xml.Unmarshal(data, v)
+
+	return v, err
+}
+
+func FetchSitemaps(urls []string) (*Sitemap, error) {
+
+	s := new(Sitemap)
+
+	for i := range urls {
+
+		v, err := FetchSitemap(urls[i])
+		if err != nil {
+			return s, fmt.Errorf("failed to fetch \"%s\": %w", urls[i], err)
+		}
+
+		s.AddPages(v.urls)
 	}
 
-	switch f {
+	return s, nil
+}
+
+func Fetch(url string) (*Sitemap, error) {
+
+	data, err := download(url)
+	if err != nil {
+		return nil, err
+	}
+
+	format, err := GetFormat(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get format: %w", err)
+	}
+
+	switch format {
 	case FormatURLSet:
 
-		us, err := UnmarshalURLSet(data)
-		return Sitemap(us), err
+		v := new(Sitemap)
+		err = xml.Unmarshal(data, v)
+		return v, err
 
 	case FormatIndex:
 
-		urls, err := UnmarshalIndex(data)
+		v := new(Index)
+		err = xml.Unmarshal(data, v)
 		if err != nil {
 			return nil, err
 		}
-
-		var si Sitemap
-
-		for i := range urls {
-
-			s, err := Fetch(urls[i].Loc.String())
-			if err != nil {
-				return nil, err
-			}
-
-			si = append(si, s...)
-
-		}
-
-		return si, nil
+		return FetchSitemaps(v.Locations())
 
 	default:
 
-		return nil, fmt.Errorf("invalid format: %s", f)
-
+		return nil, fmt.Errorf("invalid format: %s", format)
 	}
 }
 
-// // Unmarshal check the Sitemap format and unmarshal the XML with the appropriate function.
-// func Unmarshal(data []byte) (Sitemap, error) {
+func (s *Sitemap) NumPages() int {
+	return len(s.urls)
+}
 
-// 	if data == nil {
-// 		return nil, fmt.Errorf("data is nil")
-// 	}
+func (s *Sitemap) Pages() []URL {
+	return s.urls
+}
 
-// 	f, err := GetFormat(data)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("format error: %w", err)
-// 	}
+func (s *Sitemap) AddPages(u []URL) {
+	s.urls = append(s.urls, u...)
+}
 
-// 	switch f {
-// 	case FormatURLSet:
-// 		return UnmarshalURLSet(data)
-// 	case FormatIndex:
-// 		return UnmarshalIndex(data)
-// 	default:
-// 		return nil, fmt.Errorf("invalid format: %s", f)
-// 	}
-// }
+func (s *Sitemap) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+
+	v := struct {
+		URLs []URL `xml:"url"`
+	}{}
+
+	err := d.DecodeElement(&v, &start)
+	if err != nil {
+		return err
+	}
+
+	s.urls = v.URLs
+
+	return nil
+}
+
+func (s *Sitemap) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	start.Name.Local = "urlset"
+
+	v := struct {
+		URLs []URL `xml:"url"`
+	}{
+		URLs: s.urls,
+	}
+
+	return e.EncodeElement(v, start)
+}

@@ -7,11 +7,6 @@ import (
 	"github.com/g0rbe/go-sitemap"
 )
 
-var (
-	TestURLSet = "https://gorbe.io/sitemap.xml"
-	TestIndex  = "https://drszokek.hu/sitemap_index.xml"
-)
-
 var TestSites = []string{
 	"https://gorbe.io/sitemap.xml", "https://thehackernews.com/sitemap.xml",
 	"https://www.hubspot.com/sitemap.xml", "https://www.apple.com/sitemap.xml",
@@ -37,12 +32,12 @@ func TestFetch(t *testing.T) {
 	for i := range TestSites {
 
 		v, err := sitemap.Fetch(TestSites[i])
-		if err != nil || len(v) == 0 {
+		if err != nil || v.NumPages() == 0 {
 			t.Errorf("%s -> %s\n", TestSites[i], err)
 			continue
 		}
 
-		t.Logf("%s -> %d\n", TestSites[i], len(v))
+		t.Logf("%s -> %d\n", TestSites[i], v.NumPages())
 
 	}
 }
@@ -87,14 +82,14 @@ func ExampleGetFormat() {
 
 }
 
-func ExampleFetch() {
+// func ExampleFetch() {
 
-	sm, err := sitemap.Fetch("https://gorbe.io/sitemap.xml")
-	if err != nil {
-		// handle error
-	}
+// 	sm, err := sitemap.Fetch("https://gorbe.io/sitemap.xml")
+// 	if err != nil {
+// 		// handle error
+// 	}
 
-	for i := range sm {
-		fmt.Printf("%s\n", sm[i].String())
-	}
-}
+// 	for i := range sm {
+// 		fmt.Printf("%s\n", sm[i].String())
+// 	}
+// }
