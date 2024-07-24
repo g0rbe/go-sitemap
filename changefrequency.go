@@ -51,6 +51,9 @@ func ParseChangeFreq(v string) ChangeFrequency {
 	}
 }
 
+// String returns the string value of ChangeFrequency.
+//
+// If f is not a valid ChangeFrequency, returns the value ChangeFrequency as a string.
 func (f ChangeFrequency) String() string {
 	switch f {
 	case ChangeFreqAlways:
