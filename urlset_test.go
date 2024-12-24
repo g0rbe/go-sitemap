@@ -15,9 +15,9 @@ func TestURLSet(t *testing.T) {
 			sitemap.NewURL(sitemap.NewLoc("https://example.com/two"), sitemap.NewLastMod("2024-01-02"), nil, nil),
 		})
 
-	data, err := xml.MarshalIndent(u1, "", "    ")
+	data, err := u1.ToXML()
 	if err != nil {
-		t.Fatalf("Failed to marshal: %s\n", err)
+		t.Fatalf("Failed to marshal to XML: %s\n", err)
 	}
 
 	t.Logf("\n%s\n", data)

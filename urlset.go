@@ -1,6 +1,10 @@
 package sitemap
 
-import "encoding/xml"
+import (
+	"bytes"
+	"encoding/xml"
+	"fmt"
+)
 
 // URLSet encapsulates the file and references the current protocol standard.
 //
@@ -20,7 +24,33 @@ type URLSet struct {
 
 // NewURLSet returns a new URLSet with the given URLs.
 //
-// This function sets the XMLName to "urlset".
+// This function sets the XMLName to "urlset" and XMLNS to "http://www.sitemaps.org/schemas/sitemap/0.9".
 func NewURLSet(urls []*URL) *URLSet {
 	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte("http://www.sitemaps.org/schemas/sitemap/0.9"), URLs: urls}
+}
+
+func EmptyURLSet() *URLSet {
+	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte("http://www.sitemaps.org/schemas/sitemap/0.9")}
+}
+
+func (u *URLSet) ToXML() ([]byte, error) {
+
+	data, err := xml.Marshal(u)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal: %w", err)
+	}
+
+	buf := new(bytes.Buffer)
+
+	_, err = buf.Write([]byte(xml.Header))
+	if err != nil {
+		return nil, fmt.Errorf("failed to write XML header: %w", err)
+	}
+
+	_, err = buf.Write(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write data: %w", err)
+	}
+
+	return buf.Bytes(), nil
 }

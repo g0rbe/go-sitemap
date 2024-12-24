@@ -15,9 +15,9 @@ func TestIndex(t *testing.T) {
 		sitemap.NewEntry(sitemap.NewLoc("https://example.com/two"), sitemap.NewLastMod("2024-01-03")),
 	})
 
-	data, err := xml.MarshalIndent(i1, "", "    ")
+	data, err := i1.ToXML()
 	if err != nil {
-		t.Fatalf("Failed to marshal: %s\n", err)
+		t.Fatalf("Failed to marshal to XML: %s\n", err)
 	}
 
 	t.Logf("\n%s\n", data)
