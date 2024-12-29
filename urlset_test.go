@@ -38,6 +38,24 @@ func TestURLSet(t *testing.T) {
 	}
 }
 
+func TestURLSetToTXT(t *testing.T) {
+
+	u := sitemap.NewURLSet(
+		[]*sitemap.URL{
+			sitemap.NewURL(sitemap.NewLoc("https://example.com"), nil, nil, nil),
+			sitemap.NewURL(sitemap.NewLoc("https://example.com/two"), sitemap.NewLastMod("2024-01-02"), nil, nil),
+		})
+
+	buf, err := u.ToTXT()
+	if err != nil {
+		t.Fatalf("Failed to marshal to TXT: %s\n", err)
+	}
+
+	if !bytes.Equal(buf, []byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\nhttps://example.com\nhttps://example.com/two\n")) {
+		t.Fatalf("Invalid result: %s\n", buf)
+	}
+}
+
 func TestFetchURLSet(t *testing.T) {
 
 	u, err := sitemap.FetchURLSet("https://gorbe.io/en/sitemap.xml")

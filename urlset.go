@@ -85,6 +85,30 @@ func (u *URLSet) ToXML() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (u *URLSet) ToTXT() ([]byte, error) {
+
+	buf := new(bytes.Buffer)
+
+	_, err := buf.Write([]byte(xml.Header))
+	if err != nil {
+		return nil, fmt.Errorf("failed to write XML header: %w", err)
+	}
+
+	for i := range u.URLs {
+		_, err = buf.WriteString(u.URLs[i].Loc.String())
+		if err != nil {
+			return nil, fmt.Errorf("failed to write data: %w", err)
+		}
+
+		err = buf.WriteByte('\n')
+		if err != nil {
+			return nil, fmt.Errorf("failed to write newline: %w", err)
+		}
+	}
+
+	return buf.Bytes(), nil
+}
+
 func (u *URLSet) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
 	// Change the start and end tag to "urlset"
