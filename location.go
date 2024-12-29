@@ -12,7 +12,7 @@ type Location string
 // NewLoc returns a new Loc with the given value v.
 //
 // This function sets the XMLName to "loc".
-func NewLoc(v string) *Location {
+func NewLocation(v string) *Location {
 	return (*Location)(&v)
 }
 

@@ -10,7 +10,7 @@ import (
 
 func TestURL(t *testing.T) {
 
-	u1 := sitemap.NewURL(sitemap.NewLoc("https://example.com"), sitemap.NewLastMod("1970-01-01"), nil, nil)
+	u1 := sitemap.NewURL(sitemap.NewLocation("https://example.com"), sitemap.NewLastMod("1970-01-01"), nil, nil)
 
 	out, err := xml.Marshal(u1)
 	if err != nil {

@@ -95,7 +95,7 @@ func (u *URLSet) ToTXT() ([]byte, error) {
 	}
 
 	for i := range u.URLs {
-		_, err = buf.WriteString(u.URLs[i].Loc.String())
+		_, err = buf.WriteString(u.URLs[i].Location.String())
 		if err != nil {
 			return nil, fmt.Errorf("failed to write data: %w", err)
 		}

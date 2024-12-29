@@ -14,7 +14,7 @@ import (
 //	  <priority>0.8</priority>
 //	</url>
 type URL struct {
-	Loc        *Location        `xml:"loc"`
+	Location   *Location        `xml:"loc"`
 	LastMod    *LastMod         `xml:"lastmod,omitempty"`
 	ChangeFreq *ChangeFrequency `xml:"changefreq,omitempty"`
 	Priority   *Priority        `xml:"priority,omitempty"`
@@ -27,7 +27,7 @@ type URL struct {
 // This function sets the XMLName to "url".
 func NewURL(loc *Location, lastmod *LastMod, changefreq *ChangeFrequency, prio *Priority) *URL {
 	return &URL{
-		Loc:        loc,
+		Location:   loc,
 		LastMod:    lastmod,
 		ChangeFreq: changefreq,
 		Priority:   prio}
@@ -36,7 +36,7 @@ func NewURL(loc *Location, lastmod *LastMod, changefreq *ChangeFrequency, prio *
 func (u *URL) String() string {
 	buf := new(strings.Builder)
 
-	buf.WriteString(u.Loc.String())
+	buf.WriteString(u.Location.String())
 
 	if u.LastMod != nil {
 		buf.WriteByte(' ')
@@ -70,7 +70,7 @@ func (u *URL) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		Priority   *Priority        `xml:"priority,omitempty"`
 		Comment    []byte           `xml:",comment"`
 	}{
-		Loc:        u.Loc,
+		Loc:        u.Location,
 		LastMod:    u.LastMod,
 		ChangeFreq: u.ChangeFreq,
 		Priority:   u.Priority,

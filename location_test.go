@@ -10,7 +10,7 @@ import (
 
 func TestLoc(t *testing.T) {
 
-	l1 := sitemap.NewLoc("https://gorbe.io/test")
+	l1 := sitemap.NewLocation("https://gorbe.io/test")
 
 	out, err := xml.Marshal(l1)
 	if err != nil {
