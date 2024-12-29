@@ -1,6 +1,7 @@
 package sitemap_test
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"testing"
@@ -21,7 +22,9 @@ func TestURLSet(t *testing.T) {
 		t.Fatalf("Failed to marshal to XML: %s\n", err)
 	}
 
-	t.Logf("\n%s\n", data)
+	if !bytes.Equal(data, []byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>https://example.com</loc></url><url><loc>https://example.com/two</loc><lastmod>2024-01-02</lastmod></url></urlset>")) {
+		t.Fatalf("Invalid data: %s\n", data)
+	}
 
 	u2 := new(sitemap.URLSet)
 
@@ -45,8 +48,6 @@ func TestFetchURLSet(t *testing.T) {
 	if len(u.URLs) == 0 {
 		t.Fatalf("Invalid result: zero length\n")
 	}
-
-	t.Logf("Length: %d\n", len(u.URLs))
 }
 
 func ExampleFetchURLSet() {

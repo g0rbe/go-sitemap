@@ -58,8 +58,8 @@ func (u *URL) String() string {
 
 func (u *URL) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
-	// Change the start and end tag to "url"
-	if start.Name.Local != "url" {
+	// Change the start and end tag to "url" if not set to "url" for URLSet or "sitemap" for Index.
+	if start.Name.Local != "url" && start.Name.Local != "sitemap" {
 		start.Name.Local = "url"
 	}
 

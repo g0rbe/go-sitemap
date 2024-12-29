@@ -28,11 +28,11 @@ type URLSet struct {
 //
 // This function sets the XMLName to "urlset" and XMLNS to "http://www.sitemaps.org/schemas/sitemap/0.9".
 func NewURLSet(urls []*URL) *URLSet {
-	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte("http://www.sitemaps.org/schemas/sitemap/0.9"), URLs: urls}
+	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte(XMLNameSpace), URLs: urls}
 }
 
 func EmptyURLSet() *URLSet {
-	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte("http://www.sitemaps.org/schemas/sitemap/0.9")}
+	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte(XMLNameSpace)}
 }
 
 // ReadURLSet reads the Sitemap from r.
