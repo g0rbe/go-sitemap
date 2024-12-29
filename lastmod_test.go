@@ -1,6 +1,7 @@
 package sitemap_test
 
 import (
+	"bytes"
 	"encoding/xml"
 	"testing"
 
@@ -16,7 +17,9 @@ func TestLastMod(t *testing.T) {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
 
-	t.Logf("%s\n", out)
+	if !bytes.Equal(out, []byte("<lastmod>2024-01-01</lastmod>")) {
+		t.Fatalf("Invalid data: %s\n", out)
+	}
 
 	var l2 = new(sitemap.LastMod)
 

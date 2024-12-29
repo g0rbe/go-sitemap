@@ -1,6 +1,7 @@
 package sitemap_test
 
 import (
+	"bytes"
 	"encoding/xml"
 	"testing"
 
@@ -9,14 +10,16 @@ import (
 
 func TestURL(t *testing.T) {
 
-	u1 := sitemap.NewURL(sitemap.NewLoc("https://example.com"), nil, nil, nil)
+	u1 := sitemap.NewURL(sitemap.NewLoc("https://example.com"), sitemap.NewLastMod("1970-01-01"), nil, nil)
 
-	out, err := xml.MarshalIndent(u1, "", "    ")
+	out, err := xml.Marshal(u1)
 	if err != nil {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
 
-	t.Logf("\n%s\n", out)
+	if !bytes.Equal(out, []byte("<url><loc>https://example.com</loc><lastmod>1970-01-01</lastmod></url>")) {
+		t.Fatalf("Invalid data: %s\n", out)
+	}
 
 	var u2 = new(sitemap.URL)
 

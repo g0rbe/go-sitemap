@@ -49,7 +49,7 @@ func TestFetchURLSet(t *testing.T) {
 	t.Logf("Length: %d\n", len(u.URLs))
 }
 
-func ExampleFetchURLSet(t *testing.T) {
+func ExampleFetchURLSet() {
 
 	u, err := sitemap.FetchURLSet("https://gorbe.io/en/sitemap.xml")
 	if err != nil {

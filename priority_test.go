@@ -1,6 +1,7 @@
 package sitemap_test
 
 import (
+	"bytes"
 	"encoding/xml"
 	"testing"
 
@@ -16,7 +17,9 @@ func TestPriority(t *testing.T) {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
 
-	t.Logf("%s\n", out)
+	if !bytes.Equal(out, []byte("<priority>0.5</priority>")) {
+		t.Fatalf("Invalid data: %s\n", out)
+	}
 
 	var p2 = new(sitemap.Priority)
 

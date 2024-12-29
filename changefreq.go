@@ -1,6 +1,8 @@
 package sitemap
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+)
 
 // How frequently the page is likely to change. This value provides general information to search engines and may not correlate exactly to how often they crawl the page.
 //
@@ -19,23 +21,30 @@ import "encoding/xml"
 // Even though search engine crawlers may consider this information when making decisions, they may crawl pages marked "hourly" less frequently than that, and they may crawl pages marked "yearly" more frequently than that.
 // Crawlers may periodically crawl pages marked "never" so that they can handle unexpected changes to those pages.
 //
+// Example:
+//
 //	<changefreq>monthly</changefreq>
-type ChangeFreq struct {
-	XMLName xml.Name `xml:"changefreq"`
-	Value   []byte   `xml:",chardata"`
-}
+type ChangeFrequency string
 
 // NewChangeFreq returns a new ChangeFreq with the given value v.
 // If v is an emty string(""), returns nil.
-//
-// This function sets the XMLName to "changefreq".
-func NewChangeFreq(v string) *ChangeFreq {
+func NewChangeFreq(v string) *ChangeFrequency {
 	if v == "" {
 		return nil
 	}
-	return &ChangeFreq{XMLName: xml.Name{Local: "changefreq"}, Value: []byte(v)}
+	return (*ChangeFrequency)(&v)
 }
 
-func (c *ChangeFreq) String() string {
-	return string(c.Value)
+func (c *ChangeFrequency) String() string {
+	return string(*c)
+}
+
+func (c *ChangeFrequency) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	// Change the start and end tag to "changefreq"
+	if start.Name.Local != "changefreq" {
+		start.Name.Local = "changefreq"
+	}
+
+	return e.EncodeElement(c.String(), start)
 }

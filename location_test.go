@@ -1,6 +1,7 @@
 package sitemap_test
 
 import (
+	"bytes"
 	"encoding/xml"
 	"testing"
 
@@ -16,9 +17,11 @@ func TestLoc(t *testing.T) {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
 
-	t.Logf("%s\n", out)
+	if !bytes.Equal(out, []byte("<loc>https://gorbe.io/test</loc>")) {
+		t.Fatalf("Invalid data: %s\n", out)
+	}
 
-	var l2 = new(sitemap.Loc)
+	var l2 = new(sitemap.Location)
 
 	err = xml.Unmarshal(out, l2)
 	if err != nil {

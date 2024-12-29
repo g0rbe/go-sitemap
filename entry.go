@@ -12,16 +12,16 @@ import (
 //	  <lastmod>2004-10-01T18:23:17+00:00</lastmod>
 //	</sitemap>
 type Entry struct {
-	XMLName xml.Name `xml:"sitemap"`
-	Loc     *Loc     `xml:"loc"`
-	LastMod *LastMod `xml:"lastmod,omitempty"`
-	Comment []byte   `xml:",comment"`
+	XMLName xml.Name  `xml:"sitemap"`
+	Loc     *Location `xml:"loc"`
+	LastMod *LastMod  `xml:"lastmod,omitempty"`
+	Comment []byte    `xml:",comment"`
 }
 
 // NewEntry returns a new Entry with the given fields set.
 //
 // This function sets the XMLName to "sitemap".
-func NewEntry(loc *Loc, lastmod *LastMod) *Entry {
+func NewEntry(loc *Location, lastmod *LastMod) *Entry {
 	return &Entry{XMLName: xml.Name{Local: "sitemap"}, Loc: loc, LastMod: lastmod}
 }
 

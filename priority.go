@@ -13,11 +13,10 @@ import "encoding/xml"
 // Also, please note that assigning a high priority to all of the URLs on your site is not likely to help you.
 // Since the priority is relative, it is only used to select between URLs on your site.
 //
+// Example:
+//
 //	<priority>0.8</priority>
-type Priority struct {
-	XMLName xml.Name `xml:"priority"`
-	Value   []byte   `xml:",chardata"`
-}
+type Priority string
 
 // NewPriority returns a new Priority with the given value v.
 // If v is an emty string(""), returns nil.
@@ -27,9 +26,33 @@ func NewPriority(v string) *Priority {
 	if v == "" {
 		return nil
 	}
-	return &Priority{XMLName: xml.Name{Local: "priority"}, Value: []byte(v)}
+	return (*Priority)(&v)
 }
 
 func (p *Priority) String() string {
-	return string(p.Value)
+	return string(*p)
+}
+
+func (p *Priority) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+
+	v := new(string)
+
+	err := d.DecodeElement(v, &start)
+	if err != nil {
+		return err
+	}
+
+	*p = Priority(*v)
+
+	return nil
+}
+
+func (p *Priority) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	// Change the start and end tag to "priority"
+	if start.Name.Local != "priority" {
+		start.Name.Local = "priority"
+	}
+
+	return e.EncodeElement(p.String(), start)
 }

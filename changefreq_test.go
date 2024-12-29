@@ -1,13 +1,14 @@
 package sitemap_test
 
 import (
+	"bytes"
 	"encoding/xml"
 	"testing"
 
 	"git.gorbe.io/go/sitemap"
 )
 
-func TestChangeFreq(t *testing.T) {
+func TestChangeFrequency(t *testing.T) {
 
 	l1 := sitemap.NewChangeFreq("daily")
 
@@ -16,9 +17,11 @@ func TestChangeFreq(t *testing.T) {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
 
-	t.Logf("%s\n", out)
+	if !bytes.Equal(out, []byte("<changefreq>daily</changefreq>")) {
+		t.Fatalf("Invalid string: %s\n", out)
+	}
 
-	var l2 = new(sitemap.ChangeFreq)
+	var l2 = new(sitemap.ChangeFrequency)
 
 	err = xml.Unmarshal(out, l2)
 	if err != nil {

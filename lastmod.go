@@ -8,23 +8,44 @@ import "encoding/xml"
 //
 // Note also that this tag is separate from the If-Modified-Since (304) header the server can return, and search engines may use the information from both sources differently.
 //
+// Example:
+//
 //	<lastmod>2005-01-01</lastmod>
-type LastMod struct {
-	XMLName xml.Name `xml:"lastmod"`
-	Value   []byte   `xml:",chardata"`
-}
+type LastMod string
 
 // NewLastMod returns a new LastMod with the given value v.
 // If v is an emty string(""), returns nil.
-//
-// This function sets the XMLName to "lastmod".
 func NewLastMod(v string) *LastMod {
 	if v == "" {
 		return nil
 	}
-	return &LastMod{XMLName: xml.Name{Local: "lastmod"}, Value: []byte(v)}
+	return (*LastMod)(&v)
 }
 
 func (l *LastMod) String() string {
-	return string(l.Value)
+	return string(*l)
+}
+
+func (l *LastMod) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+
+	v := new(string)
+
+	err := d.DecodeElement(v, &start)
+	if err != nil {
+		return err
+	}
+
+	*l = LastMod(*v)
+
+	return nil
+}
+
+func (l *LastMod) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	// CHange the start and end tag to "lastmod"
+	if start.Name.Local != "lastmod" {
+		start.Name.Local = "lastmod"
+	}
+
+	return e.EncodeElement(l.String(), start)
 }
