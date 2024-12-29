@@ -19,20 +19,14 @@ import (
 //	  </url>
 //	</urlset>
 type URLSet struct {
-	XMLName xml.Name `xml:"urlset"`
-	NS      []byte   `xml:"xmlns,attr"`
-	URLs    []*URL   `xml:"url"`
+	URLs []*URL `xml:"url"`
 }
 
 // NewURLSet returns a new URLSet with the given URLs.
 //
 // This function sets the XMLName to "urlset" and XMLNS to "http://www.sitemaps.org/schemas/sitemap/0.9".
 func NewURLSet(urls []*URL) *URLSet {
-	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte(XMLNameSpace), URLs: urls}
-}
-
-func EmptyURLSet() *URLSet {
-	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte(XMLNameSpace)}
+	return &URLSet{URLs: urls}
 }
 
 // ReadURLSet reads the Sitemap from r.
@@ -45,7 +39,7 @@ func ReadURLSet(r io.Reader) (*URLSet, error) {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
 
-	u := EmptyURLSet()
+	u := new(URLSet)
 
 	err = xml.Unmarshal(data, u)
 	if err != nil {
@@ -89,4 +83,23 @@ func (u *URLSet) ToXML() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (u *URLSet) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	// Change the start and end tag to "urlset"
+	if start.Name.Local != "urlset" {
+		start.Name.Local = "urlset"
+	}
+
+	// Append "xmlns" attribute
+	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns"}, Value: XMLNameSpace})
+
+	v := struct {
+		URLs []*URL `xml:"url"`
+	}{
+		URLs: u.URLs,
+	}
+
+	return e.EncodeElement(v, start)
 }
