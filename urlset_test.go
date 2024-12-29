@@ -2,6 +2,7 @@ package sitemap_test
 
 import (
 	"encoding/xml"
+	"fmt"
 	"testing"
 
 	"git.gorbe.io/go/sitemap"
@@ -32,4 +33,28 @@ func TestURLSet(t *testing.T) {
 	if len(u1.URLs) != len(u2.URLs) {
 		t.Fatalf("Invalid result: \n%#v\n%#v\n", *u1, *u2)
 	}
+}
+
+func TestFetchURLSet(t *testing.T) {
+
+	u, err := sitemap.FetchURLSet("https://gorbe.io/en/sitemap.xml")
+	if err != nil {
+		t.Fatalf("%s\n", err)
+	}
+
+	if len(u.URLs) == 0 {
+		t.Fatalf("Invalid result: zero length\n")
+	}
+
+	t.Logf("Length: %d\n", len(u.URLs))
+}
+
+func ExampleFetchURLSet(t *testing.T) {
+
+	u, err := sitemap.FetchURLSet("https://gorbe.io/en/sitemap.xml")
+	if err != nil {
+		// Handle error
+	}
+
+	fmt.Printf("Length is %d\n", len(u.URLs))
 }

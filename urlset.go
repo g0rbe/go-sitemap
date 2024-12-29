@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"io"
+	"net/http"
 )
 
 // URLSet encapsulates the file and references the current protocol standard.
@@ -31,6 +33,40 @@ func NewURLSet(urls []*URL) *URLSet {
 
 func EmptyURLSet() *URLSet {
 	return &URLSet{XMLName: xml.Name{Local: "urlset"}, NS: []byte("http://www.sitemaps.org/schemas/sitemap/0.9")}
+}
+
+// ReadURLSet reads the Sitemap from r.
+//
+// If r contains Sitemap INdex, returns an empty URLSet.
+func ReadURLSet(r io.Reader) (*URLSet, error) {
+
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read: %w", err)
+	}
+
+	u := EmptyURLSet()
+
+	err = xml.Unmarshal(data, u)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+	}
+
+	return u, nil
+}
+
+// FetchURLSet fetches the Sitemap from url.
+//
+// If r contains Sitemap INdex, returns an empty URLSet.
+func FetchURLSet(url string) (*URLSet, error) {
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return ReadURLSet(resp.Body)
 }
 
 func (u *URLSet) ToXML() ([]byte, error) {
