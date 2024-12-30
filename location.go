@@ -1,6 +1,9 @@
 package sitemap
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"net/url"
+)
 
 // Location is the URL of the page. This URL must begin with the protocol (such as http) and end with a trailing slash, if your web server requires it. This value must be less than 2,048 characters.
 //
@@ -12,8 +15,17 @@ type Location string
 // NewLoc returns a new Loc with the given value v.
 //
 // This function sets the XMLName to "loc".
-func NewLocation(v string) *Location {
-	return (*Location)(&v)
+func NewLocation[T string | url.URL](v T) *Location {
+
+	switch t := any(v).(type) {
+	case string:
+		return (*Location)(&t)
+	case url.URL:
+		r := t.String()
+		return (*Location)(&r)
+	default:
+		return nil
+	}
 }
 
 func (l *Location) String() string {
