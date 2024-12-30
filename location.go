@@ -28,6 +28,10 @@ func NewLocation[T string | url.URL](v T) *Location {
 	}
 }
 
+func (l *Location) URL() (*url.URL, error) {
+	return url.Parse(l.String())
+}
+
 func (l *Location) String() string {
 	return string(*l)
 }
