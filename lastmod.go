@@ -26,20 +26,6 @@ func (l *LastMod) String() string {
 	return string(*l)
 }
 
-func (l *LastMod) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-
-	v := new(string)
-
-	err := d.DecodeElement(v, &start)
-	if err != nil {
-		return err
-	}
-
-	*l = LastMod(*v)
-
-	return nil
-}
-
 func (l *LastMod) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
 	// CHange the start and end tag to "lastmod"
