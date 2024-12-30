@@ -14,7 +14,7 @@ func TestURLSet(t *testing.T) {
 	u1 := sitemap.NewURLSet(
 		[]*sitemap.URL{
 			sitemap.NewURL(sitemap.NewLocation("https://example.com"), nil, nil, nil),
-			sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastMod("2024-01-02"), nil, nil),
+			sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastModification("2024-01-02"), nil, nil),
 		})
 
 	data, err := u1.ToXML()
@@ -43,7 +43,7 @@ func TestURLSetToTXT(t *testing.T) {
 	u := sitemap.NewURLSet(
 		[]*sitemap.URL{
 			sitemap.NewURL(sitemap.NewLocation("https://example.com"), nil, nil, nil),
-			sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastMod("2024-01-02"), nil, nil),
+			sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastModification("2024-01-02"), nil, nil),
 		})
 
 	buf, err := u.ToTXT()

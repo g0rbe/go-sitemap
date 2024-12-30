@@ -11,9 +11,9 @@ import (
 func TestIndex(t *testing.T) {
 
 	i1 := sitemap.NewIndex(
-		sitemap.NewURL(sitemap.NewLocation("https://example.com/"), sitemap.NewLastMod("2024-01-01"), nil, nil),
-		sitemap.NewURL(sitemap.NewLocation("https://example.com/one"), sitemap.NewLastMod("2024-01-02"), nil, nil),
-		sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastMod("2024-01-03"), nil, nil),
+		sitemap.NewURL(sitemap.NewLocation("https://example.com/"), sitemap.NewLastModification("2024-01-01"), nil, nil),
+		sitemap.NewURL(sitemap.NewLocation("https://example.com/one"), sitemap.NewLastModification("2024-01-02"), nil, nil),
+		sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastModification("2024-01-03"), nil, nil),
 	)
 
 	data, err := i1.ToXML()

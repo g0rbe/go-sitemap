@@ -11,22 +11,22 @@ import "encoding/xml"
 // Example:
 //
 //	<lastmod>2005-01-01</lastmod>
-type LastMod string
+type LastModification string
 
 // NewLastMod returns a new LastMod with the given value v.
 // If v is an emty string(""), returns nil.
-func NewLastMod(v string) *LastMod {
+func NewLastModification(v string) *LastModification {
 	if v == "" {
 		return nil
 	}
-	return (*LastMod)(&v)
+	return (*LastModification)(&v)
 }
 
-func (l *LastMod) String() string {
+func (l *LastModification) String() string {
 	return string(*l)
 }
 
-func (l *LastMod) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+func (l *LastModification) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
 	// CHange the start and end tag to "lastmod"
 	if start.Name.Local != "lastmod" {

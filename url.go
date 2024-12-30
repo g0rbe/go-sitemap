@@ -14,18 +14,18 @@ import (
 //	  <priority>0.8</priority>
 //	</url>
 type URL struct {
-	Location   *Location        `xml:"loc"`
-	LastMod    *LastMod         `xml:"lastmod,omitempty"`
-	ChangeFreq *ChangeFrequency `xml:"changefreq,omitempty"`
-	Priority   *Priority        `xml:"priority,omitempty"`
-	Comment    []byte           `xml:",comment"`
+	Location   *Location         `xml:"loc"`
+	LastMod    *LastModification `xml:"lastmod,omitempty"`
+	ChangeFreq *ChangeFrequency  `xml:"changefreq,omitempty"`
+	Priority   *Priority         `xml:"priority,omitempty"`
+	Comment    []byte            `xml:",comment"`
 }
 
 // NewURL returns a new URL with the given fields set.
 // If any field is nil, it will be omotted.
 //
 // This function sets the XMLName to "url".
-func NewURL(loc *Location, lastmod *LastMod, changefreq *ChangeFrequency, prio *Priority) *URL {
+func NewURL(loc *Location, lastmod *LastModification, changefreq *ChangeFrequency, prio *Priority) *URL {
 	return &URL{
 		Location:   loc,
 		LastMod:    lastmod,
@@ -64,11 +64,11 @@ func (u *URL) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	}
 
 	v := struct {
-		Loc        *Location        `xml:"loc"`
-		LastMod    *LastMod         `xml:"lastmod,omitempty"`
-		ChangeFreq *ChangeFrequency `xml:"changefreq,omitempty"`
-		Priority   *Priority        `xml:"priority,omitempty"`
-		Comment    []byte           `xml:",comment"`
+		Loc        *Location         `xml:"loc"`
+		LastMod    *LastModification `xml:"lastmod,omitempty"`
+		ChangeFreq *ChangeFrequency  `xml:"changefreq,omitempty"`
+		Priority   *Priority         `xml:"priority,omitempty"`
+		Comment    []byte            `xml:",comment"`
 	}{
 		Loc:        u.Location,
 		LastMod:    u.LastMod,

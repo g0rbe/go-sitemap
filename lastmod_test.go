@@ -10,7 +10,7 @@ import (
 
 func TestLastMod(t *testing.T) {
 
-	l1 := sitemap.NewLastMod("2024-01-01")
+	l1 := sitemap.NewLastModification("2024-01-01")
 
 	out, err := xml.Marshal(l1)
 	if err != nil {
@@ -21,7 +21,7 @@ func TestLastMod(t *testing.T) {
 		t.Fatalf("Invalid data: %s\n", out)
 	}
 
-	var l2 = new(sitemap.LastMod)
+	var l2 = new(sitemap.LastModification)
 
 	err = xml.Unmarshal(out, l2)
 	if err != nil {
