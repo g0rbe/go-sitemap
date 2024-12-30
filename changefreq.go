@@ -2,6 +2,7 @@ package sitemap
 
 import (
 	"encoding/xml"
+	"strings"
 )
 
 // How frequently the page is likely to change. This value provides general information to search engines and may not correlate exactly to how often they crawl the page.
@@ -26,13 +27,40 @@ import (
 //	<changefreq>monthly</changefreq>
 type ChangeFrequency string
 
-// NewChangeFreq returns a new ChangeFreq with the given value v.
-// If v is an emty string(""), returns nil.
-func NewChangeFreq(v string) *ChangeFrequency {
-	if v == "" {
+// Valid values for ChangeFrequency
+var (
+	ChangeFrequencyAlways  ChangeFrequency = "always"
+	ChangeFrequencyHourly  ChangeFrequency = "hourly"
+	ChangeFrequencyDaily   ChangeFrequency = "daily"
+	ChangeFrequencyWeekly  ChangeFrequency = "weekly"
+	ChangeFrequencyMonthly ChangeFrequency = "monthly"
+	ChangeFrequencyYearly  ChangeFrequency = "yearly"
+	ChangeFrequencyNever   ChangeFrequency = "never"
+)
+
+// ParseChangeFrequency parses ChangeFrequency from v.
+//
+// If v is not a valid value for ChangeFrequency, returns nil.
+func ParseChangeFrequency(v string) *ChangeFrequency {
+
+	switch strings.ToLower(v) {
+	case "always":
+		return &ChangeFrequencyAlways
+	case "hourly":
+		return &ChangeFrequencyHourly
+	case "daily":
+		return &ChangeFrequencyDaily
+	case "weekly":
+		return &ChangeFrequencyWeekly
+	case "monthly":
+		return &ChangeFrequencyMonthly
+	case "yearly":
+		return &ChangeFrequencyYearly
+	case "never":
+		return &ChangeFrequencyNever
+	default:
 		return nil
 	}
-	return (*ChangeFrequency)(&v)
 }
 
 func (c *ChangeFrequency) String() string {

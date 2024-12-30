@@ -10,7 +10,7 @@ import (
 
 func TestChangeFrequency(t *testing.T) {
 
-	l1 := sitemap.NewChangeFreq("daily")
+	l1 := sitemap.ParseChangeFrequency("daily")
 
 	out, err := xml.Marshal(l1)
 	if err != nil {
