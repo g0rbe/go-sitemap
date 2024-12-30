@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 )
 
 // URLSet encapsulates the file and references the current protocol standard.
@@ -20,13 +21,14 @@ import (
 //	</urlset>
 type URLSet struct {
 	URLs []*URL `xml:"url"`
+	m    *sync.RWMutex
 }
 
 // NewURLSet returns a new URLSet with the given URLs.
 //
 // This function sets the XMLName to "urlset" and XMLNS to "http://www.sitemaps.org/schemas/sitemap/0.9".
 func NewURLSet(urls []*URL) *URLSet {
-	return &URLSet{URLs: urls}
+	return &URLSet{URLs: urls, m: new(sync.RWMutex)}
 }
 
 // ReadURLSet reads the Sitemap from r.
@@ -39,7 +41,7 @@ func ReadURLSet(r io.Reader) (*URLSet, error) {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
 
-	u := new(URLSet)
+	u := NewURLSet(nil)
 
 	err = xml.Unmarshal(data, u)
 	if err != nil {
@@ -65,6 +67,9 @@ func FetchURLSet(url string) (*URLSet, error) {
 
 func (u *URLSet) ToXML() ([]byte, error) {
 
+	u.m.RLock()
+	defer u.m.RUnlock()
+
 	data, err := xml.Marshal(u)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal: %w", err)
@@ -86,6 +91,9 @@ func (u *URLSet) ToXML() ([]byte, error) {
 }
 
 func (u *URLSet) ToTXT() ([]byte, error) {
+
+	u.m.RLock()
+	defer u.m.RUnlock()
 
 	buf := new(bytes.Buffer)
 
@@ -110,6 +118,9 @@ func (u *URLSet) ToTXT() ([]byte, error) {
 }
 
 func (u *URLSet) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	u.m.RLock()
+	defer u.m.RUnlock()
 
 	// Change the start and end tag to "urlset"
 	if start.Name.Local != "urlset" {
