@@ -72,7 +72,8 @@ func ExampleFetchURLSet() {
 
 	u, err := sitemap.FetchURLSet("https://gorbe.io/en/sitemap.xml")
 	if err != nil {
-		// Handle error
+		fmt.Printf("%s\n", err)
+		return
 	}
 
 	fmt.Printf("Length is %d\n", len(u.URLs))
