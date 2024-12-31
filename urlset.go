@@ -29,9 +29,25 @@ type URLSet struct {
 	m    *sync.RWMutex
 }
 
+// EmptyURLSet returns a new  URLSet without URLs.
+func EmptyURLSet() *URLSet {
+
+	s := new(URLSet)
+	s.m = new(sync.RWMutex)
+
+	return s
+}
+
 // NewURLSet returns a new URLSet with the given URLs.
 func NewURLSet(urls ...*URL) *URLSet {
-	return &URLSet{URLs: urls, m: new(sync.RWMutex)}
+
+	s := EmptyURLSet()
+
+	if len(urls) > 0 {
+		s.URLs = append(s.URLs, urls...)
+	}
+
+	return s
 }
 
 // ReadURLSet reads the Sitemap from r.
@@ -48,7 +64,7 @@ func ReadURLSet(r io.Reader) (*URLSet, error) {
 		return nil, ErrSitemapIndex
 	}
 
-	u := NewURLSet(nil)
+	u := EmptyURLSet()
 
 	err = xml.Unmarshal(data, u)
 	if err != nil {
