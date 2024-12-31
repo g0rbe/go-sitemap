@@ -76,3 +76,25 @@ func ExampleFetchURLSet() {
 
 	fmt.Printf("Length is %d\n", len(u.URLs))
 }
+
+func TestURLSetSetURL(t *testing.T) {
+
+	u := sitemap.NewURLSet(sitemap.NewURL(sitemap.NewLocation("https://example.com"), sitemap.NewLastModification("2024-12-30"), nil, nil))
+
+	u.SetURL(sitemap.NewURL(sitemap.NewLocation("https://example.com"), sitemap.NewLastModification("2024-12-31"), nil, nil))
+
+	if len(u.URLs) != 1 {
+		t.Fatalf("Invalid length after set: %d\n", len(u.URLs))
+	}
+
+	u1 := u.GetURL("https://example.com")
+
+	if u1 == nil {
+		t.Fatalf("Failed to get\n")
+	}
+
+	if *u1.LastMod != "2024-12-31" {
+		t.Fatalf("Invalid LastMod: %s\n", u1.LastMod)
+	}
+
+}

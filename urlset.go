@@ -72,6 +72,35 @@ func FetchURLSet(url string) (*URLSet, error) {
 	return ReadURLSet(resp.Body)
 }
 
+func (u *URLSet) GetURL(loc string) *URL {
+
+	u.m.RLock()
+	defer u.m.RUnlock()
+
+	for i := range u.URLs {
+		if *u.URLs[i].Location == Location(loc) {
+			return u.URLs[i]
+		}
+	}
+
+	return nil
+}
+
+func (u *URLSet) SetURL(url *URL) {
+
+	u.m.Lock()
+	defer u.m.Unlock()
+
+	for i := range u.URLs {
+		if *u.URLs[i].Location == *url.Location {
+			u.URLs[i] = url
+			return
+		}
+	}
+
+	u.URLs = append(u.URLs, url)
+}
+
 func (u *URLSet) ToXML() ([]byte, error) {
 
 	u.m.RLock()
