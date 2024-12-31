@@ -149,16 +149,10 @@ func (u *URLSet) ToTXT() ([]byte, error) {
 
 	buf := new(bytes.Buffer)
 
-	// Write XML header
-	_, err := buf.Write([]byte(xml.Header))
-	if err != nil {
-		return nil, fmt.Errorf("failed to write XML header: %w", err)
-	}
-
 	for i := range u.URLs {
 
 		// Write Location + "\n"
-		_, err = buf.WriteString(u.URLs[i].Location.String() + "\n")
+		_, err := buf.WriteString(u.URLs[i].Location.String() + "\n")
 		if err != nil {
 			return nil, fmt.Errorf("failed to write %s: %w", *u.URLs[i].Location, err)
 		}

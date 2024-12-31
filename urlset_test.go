@@ -49,7 +49,7 @@ func TestURLSetToTXT(t *testing.T) {
 		t.Fatalf("Failed to marshal to TXT: %s\n", err)
 	}
 
-	if !bytes.Equal(buf, []byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\nhttps://example.com\nhttps://example.com/two\n")) {
+	if !bytes.Equal(buf, []byte("https://example.com\nhttps://example.com/two\n")) {
 		t.Fatalf("Invalid result: %s\n", buf)
 	}
 }
