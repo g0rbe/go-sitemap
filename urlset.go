@@ -88,6 +88,13 @@ func FetchURLSet(url string) (*URLSet, error) {
 	return ReadURLSet(resp.Body)
 }
 
+// Size returns the number of URL in u.URLs
+func (u *URLSet) Size() int {
+	u.m.RLock()
+	defer u.m.RUnlock()
+	return len(u.URLs)
+}
+
 func (u *URLSet) GetURL(loc string) *URL {
 
 	u.m.RLock()
