@@ -3,10 +3,15 @@ package sitemap
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"sync"
+)
+
+var (
+	ErrSitemapIndex = errors.New("sitemap is index")
 )
 
 // URLSet encapsulates the file and references the current protocol standard.
@@ -25,20 +30,22 @@ type URLSet struct {
 }
 
 // NewURLSet returns a new URLSet with the given URLs.
-//
-// This function sets the XMLName to "urlset" and XMLNS to "http://www.sitemaps.org/schemas/sitemap/0.9".
-func NewURLSet(urls []*URL) *URLSet {
+func NewURLSet(urls ...*URL) *URLSet {
 	return &URLSet{URLs: urls, m: new(sync.RWMutex)}
 }
 
 // ReadURLSet reads the Sitemap from r.
 //
-// If r contains Sitemap INdex, returns an empty URLSet.
+// If r contains Sitemap Index, returns ErrSitemapIndex.
 func ReadURLSet(r io.Reader) (*URLSet, error) {
 
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read: %w", err)
+	}
+
+	if SitemapIsIndex(data) {
+		return nil, ErrSitemapIndex
 	}
 
 	u := NewURLSet(nil)
@@ -53,7 +60,7 @@ func ReadURLSet(r io.Reader) (*URLSet, error) {
 
 // FetchURLSet fetches the Sitemap from url.
 //
-// If r contains Sitemap INdex, returns an empty URLSet.
+// If r contains Sitemap Index, returns ErrSitemapIndex.
 func FetchURLSet(url string) (*URLSet, error) {
 
 	resp, err := http.Get(url)
@@ -97,20 +104,18 @@ func (u *URLSet) ToTXT() ([]byte, error) {
 
 	buf := new(bytes.Buffer)
 
+	// Write XML header
 	_, err := buf.Write([]byte(xml.Header))
 	if err != nil {
 		return nil, fmt.Errorf("failed to write XML header: %w", err)
 	}
 
 	for i := range u.URLs {
-		_, err = buf.WriteString(u.URLs[i].Location.String())
-		if err != nil {
-			return nil, fmt.Errorf("failed to write data: %w", err)
-		}
 
-		err = buf.WriteByte('\n')
+		// Write Location + "\n"
+		_, err = buf.WriteString(u.URLs[i].Location.String() + "\n")
 		if err != nil {
-			return nil, fmt.Errorf("failed to write newline: %w", err)
+			return nil, fmt.Errorf("failed to write %s: %w", *u.URLs[i].Location, err)
 		}
 	}
 
