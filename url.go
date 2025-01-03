@@ -25,12 +25,41 @@ type URL struct {
 // If any field is nil, it will be omotted.
 //
 // This function sets the XMLName to "url".
-func NewURL(loc *Location, lastmod *LastModification, changefreq *ChangeFrequency, prio *Priority) *URL {
-	return &URL{
-		Location:   loc,
-		LastMod:    lastmod,
-		ChangeFreq: changefreq,
-		Priority:   prio}
+func NewURL(loc *Location) *URL {
+	return &URL{Location: loc}
+}
+
+// SetLastmodification lastmod in URL u and returns u.
+//
+// If URL u is nil, returns nil.
+func (u *URL) SetLastmodification(lastmod *LastModification) *URL {
+
+	if u == nil {
+		return nil
+	}
+
+	u.LastMod = lastmod
+	return u
+}
+
+func (u *URL) SetChangeFrequency(changefreq *ChangeFrequency) *URL {
+
+	if u == nil {
+		return nil
+	}
+
+	u.ChangeFreq = changefreq
+	return u
+}
+
+func (u *URL) SetPriority(priority *Priority) *URL {
+
+	if u == nil {
+		return nil
+	}
+
+	u.Priority = priority
+	return u
 }
 
 func (u *URL) String() string {
