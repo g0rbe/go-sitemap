@@ -3,6 +3,7 @@ package sitemap
 import (
 	"encoding/xml"
 	"net/url"
+	"strings"
 )
 
 // Location is the URL of the page. This URL must begin with the protocol (such as http) and end with a trailing slash, if your web server requires it. This value must be less than 2,048 characters.
@@ -26,6 +27,14 @@ func NewLocation[T string | url.URL](v T) *Location {
 	default:
 		return nil
 	}
+}
+
+func (l *Location) Equal(loc *Location) bool {
+	if l == nil || loc == nil {
+		return false
+	}
+
+	return strings.Compare(l.String(), loc.String()) == 0
 }
 
 func (l *Location) URL() (*url.URL, error) {

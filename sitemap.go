@@ -138,7 +138,7 @@ func (s *Sitemap) GetURL(loc *Location) *URL {
 	defer s.m.RUnlock()
 
 	for i := range s.URLs {
-		if *s.URLs[i].Location == *loc {
+		if s.URLs[i].Location.Equal(loc) {
 			return &s.URLs[i]
 		}
 	}
@@ -152,7 +152,7 @@ func (s *Sitemap) SetURL(u *URL) {
 	defer s.m.Unlock()
 
 	for i := range s.URLs {
-		if *s.URLs[i].Location == *u.Location {
+		if s.URLs[i].Location.Equal(u.Location) {
 			s.URLs[i] = *u
 		}
 	}
