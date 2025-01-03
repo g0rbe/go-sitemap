@@ -90,6 +90,25 @@ func (s *Sitemap) ToXML() ([]byte, error) {
 	return u.ToXML()
 }
 
+func (s *Sitemap) ToTXT() ([]byte, error) {
+
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	buf := new(bytes.Buffer)
+
+	for i := range s.URLs {
+
+		// Write Location + "\n"
+		_, err := buf.WriteString(s.URLs[i].Location.String() + "\n")
+		if err != nil {
+			return nil, fmt.Errorf("failed to write %s: %w", s.URLs[i].Location, err)
+		}
+	}
+
+	return buf.Bytes(), nil
+}
+
 func (s *Sitemap) String() string {
 
 	s.m.RLock()
