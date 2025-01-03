@@ -17,12 +17,26 @@ import (
 type LastModification string
 
 // NewLastMod returns a new LastMod with the given value v.
-// If v is an emty string(""), returns nil.
-func NewLastModification(v string) *LastModification {
-	if v == "" {
+// If v is an emtpy string("") or zero Time, returns nil.
+func NewLastModification[T string | time.Time](v T) *LastModification {
+
+	switch t := any(v).(type) {
+	case string:
+		if t == "" {
+			return nil
+		}
+		return (*LastModification)(&t)
+
+	case time.Time:
+		if t.IsZero() {
+			return nil
+		}
+		f := t.Format(time.RFC3339)
+		return (*LastModification)(&f)
+	default:
 		return nil
 	}
-	return (*LastModification)(&v)
+
 }
 
 func (l *LastModification) String() string {
