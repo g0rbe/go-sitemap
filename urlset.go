@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"io"
 )
 
 var (
@@ -55,19 +54,6 @@ func ParseURLSet(data []byte) (*URLSet, error) {
 	}
 
 	return u, nil
-}
-
-// ReadURLSet reads the Sitemap from r.
-//
-// If r contains Sitemap Index, returns ErrSitemapIndex.
-func ReadURLSet(r io.Reader) (*URLSet, error) {
-
-	data, err := io.ReadAll(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read: %w", err)
-	}
-
-	return ParseURLSet(data)
 }
 
 func (u *URLSet) ToXML() ([]byte, error) {
