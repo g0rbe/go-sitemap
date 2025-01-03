@@ -109,6 +109,14 @@ func (s *Sitemap) ToTXT() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (s *Sitemap) IsIndex() bool {
+
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	return s.index
+}
+
 func (s *Sitemap) String() string {
 
 	s.m.RLock()
