@@ -27,9 +27,7 @@ func New() *Sitemap {
 	return s
 }
 
-// ReadURLSet reads the Sitemap from r.
-//
-// If r contains Sitemap Index, returns ErrSitemapIndex.
+// Parse reads the Sitemap from data.
 func Parse(data []byte) (*Sitemap, error) {
 
 	s := New()
@@ -51,12 +49,9 @@ func Parse(data []byte) (*Sitemap, error) {
 	}
 
 	return s, nil
-
 }
 
-// ReadURLSet reads the Sitemap from r.
-//
-// If r contains Sitemap Index, returns ErrSitemapIndex.
+// Read reads the Sitemap from r.
 func Read(r io.Reader) (*Sitemap, error) {
 
 	data, err := io.ReadAll(r)
@@ -67,9 +62,7 @@ func Read(r io.Reader) (*Sitemap, error) {
 	return Parse(data)
 }
 
-// FetchURLSet fetches the Sitemap from url.
-//
-// If r contains Sitemap Index, returns ErrSitemapIndex.
+// Fetch fetches the Sitemap from url.
 func Fetch(url string) (*Sitemap, error) {
 
 	resp, err := http.Get(url)
