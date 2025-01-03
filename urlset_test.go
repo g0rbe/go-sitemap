@@ -3,7 +3,6 @@ package sitemap_test
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"testing"
 
 	"git.gorbe.io/go/sitemap"
@@ -12,8 +11,8 @@ import (
 func TestURLSet(t *testing.T) {
 
 	u1 := sitemap.NewURLSet(
-		sitemap.NewURL(sitemap.NewLocation("https://example.com"), nil, nil, nil),
-		sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastModification("2024-01-02"), nil, nil),
+		*sitemap.NewURL(sitemap.NewLocation("https://example.com"), nil, nil, nil),
+		*sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastModification("2024-01-02"), nil, nil),
 	)
 
 	data, err := u1.ToXML()
@@ -40,8 +39,8 @@ func TestURLSet(t *testing.T) {
 func TestURLSetToTXT(t *testing.T) {
 
 	u := sitemap.NewURLSet(
-		sitemap.NewURL(sitemap.NewLocation("https://example.com"), nil, nil, nil),
-		sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastModification("2024-01-02"), nil, nil),
+		*sitemap.NewURL(sitemap.NewLocation("https://example.com"), nil, nil, nil),
+		*sitemap.NewURL(sitemap.NewLocation("https://example.com/two"), sitemap.NewLastModification("2024-01-02"), nil, nil),
 	)
 
 	buf, err := u.ToTXT()
@@ -52,49 +51,4 @@ func TestURLSetToTXT(t *testing.T) {
 	if !bytes.Equal(buf, []byte("https://example.com\nhttps://example.com/two\n")) {
 		t.Fatalf("Invalid result: %s\n", buf)
 	}
-}
-
-func TestFetchURLSet(t *testing.T) {
-
-	u, err := sitemap.FetchURLSet("https://gorbe.io/en/sitemap.xml")
-	if err != nil {
-		t.Fatalf("%s\n", err)
-	}
-
-	if len(u.URLs) == 0 {
-		t.Fatalf("Invalid result: zero length\n")
-	}
-}
-
-func ExampleFetchURLSet() {
-
-	u, err := sitemap.FetchURLSet("https://gorbe.io/en/sitemap.xml")
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
-	}
-
-	fmt.Printf("Length is %d\n", len(u.URLs))
-}
-
-func TestURLSetSetURL(t *testing.T) {
-
-	u := sitemap.NewURLSet(sitemap.NewURL(sitemap.NewLocation("https://example.com"), sitemap.NewLastModification("2024-12-30"), nil, nil))
-
-	u.SetURL(sitemap.NewURL(sitemap.NewLocation("https://example.com"), sitemap.NewLastModification("2024-12-31"), nil, nil))
-
-	if len(u.URLs) != 1 {
-		t.Fatalf("Invalid length after set: %d\n", len(u.URLs))
-	}
-
-	u1 := u.GetURL("https://example.com")
-
-	if u1 == nil {
-		t.Fatalf("Failed to get\n")
-	}
-
-	if *u1.LastMod != "2024-12-31" {
-		t.Fatalf("Invalid LastMod: %s\n", u1.LastMod)
-	}
-
 }

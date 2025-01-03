@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
-	"sync"
 )
 
 var (
@@ -25,29 +23,38 @@ var (
 //	  </url>
 //	</urlset>
 type URLSet struct {
-	URLs []*URL `xml:"url"`
-	m    *sync.RWMutex
-}
-
-// EmptyURLSet returns a new  URLSet without URLs.
-func EmptyURLSet() *URLSet {
-
-	s := new(URLSet)
-	s.m = new(sync.RWMutex)
-
-	return s
+	URLs []URL `xml:"url"`
 }
 
 // NewURLSet returns a new URLSet with the given URLs.
-func NewURLSet(urls ...*URL) *URLSet {
+func NewURLSet(urls ...URL) *URLSet {
 
-	s := EmptyURLSet()
+	s := new(URLSet)
 
 	if len(urls) > 0 {
 		s.URLs = append(s.URLs, urls...)
 	}
 
 	return s
+}
+
+// ReadURLSet reads the Sitemap from r.
+//
+// If r contains Sitemap Index, returns ErrSitemapIndex.
+func ParseURLSet(data []byte) (*URLSet, error) {
+
+	if IsIndex(data) {
+		return nil, ErrSitemapIndex
+	}
+
+	u := new(URLSet)
+
+	err := xml.Unmarshal(data, u)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+	}
+
+	return u, nil
 }
 
 // ReadURLSet reads the Sitemap from r.
@@ -60,74 +67,10 @@ func ReadURLSet(r io.Reader) (*URLSet, error) {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
 
-	if SitemapIsIndex(data) {
-		return nil, ErrSitemapIndex
-	}
-
-	u := EmptyURLSet()
-
-	err = xml.Unmarshal(data, u)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal: %w", err)
-	}
-
-	return u, nil
-}
-
-// FetchURLSet fetches the Sitemap from url.
-//
-// If r contains Sitemap Index, returns ErrSitemapIndex.
-func FetchURLSet(url string) (*URLSet, error) {
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return ReadURLSet(resp.Body)
-}
-
-// Size returns the number of URL in u.URLs
-func (u *URLSet) Size() int {
-	u.m.RLock()
-	defer u.m.RUnlock()
-	return len(u.URLs)
-}
-
-func (u *URLSet) GetURL(loc string) *URL {
-
-	u.m.RLock()
-	defer u.m.RUnlock()
-
-	for i := range u.URLs {
-		if *u.URLs[i].Location == Location(loc) {
-			return u.URLs[i]
-		}
-	}
-
-	return nil
-}
-
-func (u *URLSet) SetURL(url *URL) {
-
-	u.m.Lock()
-	defer u.m.Unlock()
-
-	for i := range u.URLs {
-		if *u.URLs[i].Location == *url.Location {
-			u.URLs[i] = url
-			return
-		}
-	}
-
-	u.URLs = append(u.URLs, url)
+	return ParseURLSet(data)
 }
 
 func (u *URLSet) ToXML() ([]byte, error) {
-
-	u.m.RLock()
-	defer u.m.RUnlock()
 
 	data, err := xml.Marshal(u)
 	if err != nil {
@@ -151,9 +94,6 @@ func (u *URLSet) ToXML() ([]byte, error) {
 
 func (u *URLSet) ToTXT() ([]byte, error) {
 
-	u.m.RLock()
-	defer u.m.RUnlock()
-
 	buf := new(bytes.Buffer)
 
 	for i := range u.URLs {
@@ -170,9 +110,6 @@ func (u *URLSet) ToTXT() ([]byte, error) {
 
 func (u *URLSet) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
-	u.m.RLock()
-	defer u.m.RUnlock()
-
 	// Change the start and end tag to "urlset"
 	if start.Name.Local != "urlset" {
 		start.Name.Local = "urlset"
@@ -182,7 +119,7 @@ func (u *URLSet) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns"}, Value: XMLNameSpace})
 
 	v := struct {
-		URLs []*URL `xml:"url"`
+		URLs []URL `xml:"url"`
 	}{
 		URLs: u.URLs,
 	}

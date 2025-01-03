@@ -19,14 +19,33 @@ import (
 //	  </sitemap>
 //	</sitemapindex>
 type Index struct {
-	Sitemaps []*URL `xml:"sitemap"`
+	Sitemaps []URL `xml:"sitemap"`
 }
 
 // NewINdex returns a new Index with the given Sitemap Entries.
 //
 // This function sets the XMLName to "sitemapindex".
-func NewIndex(sitemaps ...*URL) *Index {
+func NewIndex(sitemaps ...URL) *Index {
 	return &Index{Sitemaps: sitemaps}
+}
+
+// ReadURLSet reads the Sitemap from r.
+//
+// If r contains Sitemap Index, returns ErrSitemapIndex.
+func ParseIndex(data []byte) (*Index, error) {
+
+	if !IsIndex(data) {
+		return nil, fmt.Errorf("not index")
+	}
+
+	i := new(Index)
+
+	err := xml.Unmarshal(data, i)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+	}
+
+	return i, nil
 }
 
 func (i *Index) ToXML() ([]byte, error) {
@@ -62,7 +81,7 @@ func (i *Index) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns"}, Value: XMLNameSpace})
 
 	v := struct {
-		Sitemaps []*URL `xml:"sitemap"`
+		Sitemaps []URL `xml:"sitemap"`
 	}{
 		Sitemaps: i.Sitemaps,
 	}
