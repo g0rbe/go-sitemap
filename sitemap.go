@@ -131,3 +131,29 @@ func (s *Sitemap) String() string {
 
 	return buf.String()
 }
+
+func (s *Sitemap) GetURL(loc *Location) *URL {
+
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	for i := range s.URLs {
+		if *s.URLs[i].Location == *loc {
+			return &s.URLs[i]
+		}
+	}
+
+	return nil
+}
+
+func (s *Sitemap) SetURL(u *URL) {
+
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	for i := range s.URLs {
+		if *s.URLs[i].Location == *u.Location {
+			s.URLs[i] = *u
+		}
+	}
+}
