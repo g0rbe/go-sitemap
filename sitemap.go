@@ -76,6 +76,9 @@ func Fetch(url string) (*Sitemap, error) {
 
 func (s *Sitemap) ToXML() ([]byte, error) {
 
+	s.m.RLock()
+	defer s.m.RUnlock()
+
 	if s.index {
 		i := new(Index)
 		i.Sitemaps = s.URLs
@@ -88,6 +91,10 @@ func (s *Sitemap) ToXML() ([]byte, error) {
 }
 
 func (s *Sitemap) String() string {
+
+	s.m.RLock()
+	defer s.m.RUnlock()
+
 	buf := new(strings.Builder)
 
 	for i := range s.URLs {
