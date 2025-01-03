@@ -157,3 +157,11 @@ func (s *Sitemap) SetURL(u *URL) {
 		}
 	}
 }
+
+func (s *Sitemap) Size() int {
+
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	return len(s.URLs)
+}
