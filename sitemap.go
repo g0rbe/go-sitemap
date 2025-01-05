@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 )
@@ -55,6 +56,17 @@ func Parse(data []byte) (*Sitemap, error) {
 func Read(r io.Reader) (*Sitemap, error) {
 
 	data, err := io.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read: %w", err)
+	}
+
+	return Parse(data)
+}
+
+// ReadFile reads the Sitemap from file the named file.
+func ReadFile(name string) (*Sitemap, error) {
+
+	data, err := os.ReadFile(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
