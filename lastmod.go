@@ -17,7 +17,7 @@ import (
 type LastModification string
 
 // NewLastMod returns a new LastMod with the given value v.
-// If v is an emtpy string("") or zero Time, returns nil.
+// If v is an empty string("") or zero Time, returns nil.
 func NewLastModification[T string | time.Time](v T) *LastModification {
 
 	switch t := any(v).(type) {
