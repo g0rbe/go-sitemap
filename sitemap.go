@@ -17,9 +17,9 @@ func IsIndex(data []byte) bool {
 }
 
 type Sitemap struct {
-	URLs  []URL
-	index bool
-	m     *sync.RWMutex
+	URLs    []URL
+	isIndex bool
+	m       *sync.RWMutex
 }
 
 func New() *Sitemap {
@@ -38,7 +38,7 @@ func Parse(data []byte) (*Sitemap, error) {
 		if err != nil {
 			return nil, fmt.Errorf("filed to parse Index: %w", err)
 		}
-		s.index = true
+		s.isIndex = true
 		s.URLs = i.Sitemaps
 	} else {
 		u, err := ParseURLSet(data)
@@ -91,7 +91,7 @@ func (s *Sitemap) ToXML() ([]byte, error) {
 	s.m.RLock()
 	defer s.m.RUnlock()
 
-	if s.index {
+	if s.isIndex {
 		i := new(Index)
 		i.Sitemaps = s.URLs
 		return i.ToXML()
@@ -126,7 +126,7 @@ func (s *Sitemap) IsIndex() bool {
 	s.m.RLock()
 	defer s.m.RUnlock()
 
-	return s.index
+	return s.isIndex
 }
 
 func (s *Sitemap) String() string {
