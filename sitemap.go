@@ -78,6 +78,8 @@ func ReadFile(name string) (*Sitemap, error) {
 }
 
 // Fetch fetches the Sitemap from url.
+//
+// If fetch fails, returns the status code as an error (eg.: "404").
 func Fetch(url string) (*Sitemap, error) {
 
 	resp, err := http.Get(url)
@@ -85,6 +87,10 @@ func Fetch(url string) (*Sitemap, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("%d", resp.StatusCode)
+	}
 
 	return Read(resp.Body)
 }
