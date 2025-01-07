@@ -16,12 +16,12 @@ type Location string
 // NewLoc returns a new Loc with the given value v.
 //
 // This function sets the XMLName to "loc".
-func NewLocation[T string | url.URL](v T) *Location {
+func NewLocation[T string | *url.URL](v T) *Location {
 
 	switch t := any(v).(type) {
 	case string:
 		return (*Location)(&t)
-	case url.URL:
+	case *url.URL:
 		r := t.String()
 		return (*Location)(&r)
 	default:
