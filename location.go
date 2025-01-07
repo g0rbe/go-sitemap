@@ -13,9 +13,7 @@ import (
 //	<loc>http://www.example.com/</loc>
 type Location string
 
-// NewLoc returns a new Loc with the given value v.
-//
-// This function sets the XMLName to "loc".
+// NewLocation returns a new Location with the given value v.
 func NewLocation[T string | *url.URL](v T) *Location {
 
 	switch t := any(v).(type) {
