@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/gocolly/colly/v2"
 )
 
 const XMLNameSpace = "http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -86,6 +89,49 @@ func Fetch(url string) (*Sitemap, error) {
 	return Read(resp.Body)
 }
 
+func Crawler(loc string, current *Sitemap) (*Sitemap, error) {
+
+	target, err := url.Parse(loc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse %s: %w", loc, err)
+	}
+
+	result := current
+	if result == nil {
+		result = New()
+	}
+
+	c := colly.NewCollector(
+		colly.AllowedDomains(target.Hostname()),
+		colly.ParseHTTPErrorResponse(),
+	)
+
+	c.OnError(func(r *colly.Response, reqErr error) {
+		if r.StatusCode != 404 && err != nil {
+			err = fmt.Errorf("\"%s\": %w", r.Request.URL, reqErr)
+		}
+		result.RemoveURL(r.Request.URL.String())
+	})
+
+	c.OnResponse(func(r *colly.Response) {
+		result.SetURL(NewURL(NewLocation(r.Request.URL.String())))
+	})
+
+	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+		c.Visit(e.Request.AbsoluteURL(e.Attr("href")))
+	})
+
+	c.Visit(target.String())
+
+	if current != nil {
+		for i := range current.URLs {
+			c.Visit(current.URLs[i].Location.String())
+		}
+	}
+
+	return result, err
+}
+
 func (s *Sitemap) ToXML() ([]byte, error) {
 
 	s.m.RLock()
@@ -144,13 +190,17 @@ func (s *Sitemap) String() string {
 	return buf.String()
 }
 
-func (s *Sitemap) GetURL(loc *Location) *URL {
+func (s *Sitemap) GetURL(loc string) *URL {
+
+	if s == nil || len(loc) == 0 {
+		return nil
+	}
 
 	s.m.RLock()
 	defer s.m.RUnlock()
 
 	for i := range s.URLs {
-		if s.URLs[i].Location.Equal(loc) {
+		if s.URLs[i].Location.Equal(NewLocation(loc)) {
 			return &s.URLs[i]
 		}
 	}
@@ -160,17 +210,87 @@ func (s *Sitemap) GetURL(loc *Location) *URL {
 
 func (s *Sitemap) SetURL(u *URL) {
 
+	if s == nil || u == nil {
+		return
+	}
+
 	s.m.Lock()
 	defer s.m.Unlock()
 
 	for i := range s.URLs {
 		if s.URLs[i].Location.Equal(u.Location) {
-			s.URLs[i] = *u
+
+			// Set LastMod
+			if u.LastMod != nil {
+				s.URLs[i].LastMod = u.LastMod
+			}
+
+			// Set ChangeFreq
+			if u.ChangeFreq != nil {
+				s.URLs[i].ChangeFreq = u.ChangeFreq
+			}
+
+			// Set Priority
+			if u.Priority != nil {
+				s.URLs[i].Priority = u.Priority
+			}
+
+			// Set Comment
+			if u.Comment != nil {
+				s.URLs[i].Comment = u.Comment
+			}
+
+			return
 		}
 	}
+
+	s.URLs = append(s.URLs, *u)
+}
+
+func (s *Sitemap) RemoveURL(loc string) {
+
+	if s == nil || len(loc) == 0 {
+		return
+	}
+
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	locIndex := -1
+
+	for i := range s.URLs {
+		if s.URLs[i].Location.String() == loc {
+			locIndex = i
+			break
+		}
+	}
+
+	if locIndex == -1 {
+		return
+	}
+
+	// Remove the first elem
+	if locIndex == 0 {
+		s.URLs = s.URLs[locIndex+1:]
+		return
+	}
+
+	// Remove the last elem
+	if locIndex == len(s.URLs)-1 {
+		s.URLs = s.URLs[:locIndex]
+		return
+	}
+
+	v := s.URLs[:locIndex]
+	s.URLs = append(v, s.URLs[locIndex+1:]...)
+
 }
 
 func (s *Sitemap) Size() int {
+
+	if s == nil {
+		return 0
+	}
 
 	s.m.RLock()
 	defer s.m.RUnlock()
