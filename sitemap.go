@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 
@@ -302,4 +303,19 @@ func (s *Sitemap) Size() int {
 	defer s.m.RUnlock()
 
 	return len(s.URLs)
+}
+
+// SortByLocation sorts the URLs by Location in ascending order.
+func (s *Sitemap) SortByLocation() {
+
+	if s == nil {
+		return
+	}
+
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	slices.SortStableFunc(s.URLs, func(a, b URL) int {
+		return strings.Compare(a.Location.String(), b.Location.String())
+	})
 }
