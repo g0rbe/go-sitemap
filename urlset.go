@@ -79,6 +79,28 @@ func (u *URLSet) ToXML() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (u *URLSet) ToXMLIndent() ([]byte, error) {
+
+	data, err := xml.MarshalIndent(u, "", "\t")
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal: %w", err)
+	}
+
+	buf := new(bytes.Buffer)
+
+	_, err = buf.Write([]byte(xml.Header))
+	if err != nil {
+		return nil, fmt.Errorf("failed to write XML header: %w", err)
+	}
+
+	_, err = buf.Write(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write data: %w", err)
+	}
+
+	return buf.Bytes(), nil
+}
+
 func (u *URLSet) ToTXT() ([]byte, error) {
 
 	buf := new(bytes.Buffer)
