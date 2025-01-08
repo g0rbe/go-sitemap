@@ -155,6 +155,22 @@ func (s *Sitemap) ToXML() ([]byte, error) {
 	return u.ToXML()
 }
 
+func (s *Sitemap) ToXMLIndent() ([]byte, error) {
+
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	if s.isIndex {
+		i := new(Index)
+		i.Sitemaps = s.URLs
+		return i.ToXMLIndent()
+	}
+
+	u := new(URLSet)
+	u.URLs = s.URLs
+	return u.ToXMLIndent()
+}
+
 func (s *Sitemap) ToTXT() ([]byte, error) {
 
 	s.m.RLock()
@@ -172,6 +188,38 @@ func (s *Sitemap) ToTXT() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (s *Sitemap) ToJSON() ([]byte, error) {
+
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	if s.isIndex {
+		i := new(Index)
+		i.Sitemaps = s.URLs
+		return i.ToJSON()
+	}
+
+	u := new(URLSet)
+	u.URLs = s.URLs
+	return u.ToJSON()
+}
+
+func (s *Sitemap) ToJSONIndent() ([]byte, error) {
+
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	if s.isIndex {
+		i := new(Index)
+		i.Sitemaps = s.URLs
+		return i.ToJSONIndent()
+	}
+
+	u := new(URLSet)
+	u.URLs = s.URLs
+	return u.ToJSONIndent()
 }
 
 func (s *Sitemap) IsIndex() bool {
