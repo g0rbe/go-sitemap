@@ -129,6 +129,17 @@ func (u *URLSet) ToJSON() ([]byte, error) {
 
 }
 
+func (u *URLSet) ToJSONIndent() ([]byte, error) {
+
+	v := struct {
+		URLSet *URLSet `json:"urlset"`
+	}{
+		URLSet: u,
+	}
+
+	return json.MarshalIndent(v, "", "\t")
+}
+
 func (u *URLSet) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
 	// Change the start and end tag to "urlset"

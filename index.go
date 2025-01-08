@@ -103,6 +103,17 @@ func (i *Index) ToJSON() ([]byte, error) {
 	return json.Marshal(v)
 }
 
+func (i *Index) ToJSONIndent() ([]byte, error) {
+
+	v := struct {
+		Index *Index `json:"sitemapindex"`
+	}{
+		Index: i,
+	}
+
+	return json.MarshalIndent(v, "", "\t")
+}
+
 func (i *Index) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
 	// Change the start and end tag to "sitemapindex"
