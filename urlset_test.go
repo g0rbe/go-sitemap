@@ -52,3 +52,20 @@ func TestURLSetToTXT(t *testing.T) {
 		t.Fatalf("Invalid result: %s\n", buf)
 	}
 }
+
+func TestURLSetToJSON(t *testing.T) {
+
+	u := sitemap.NewURLSet(
+		*sitemap.NewURL(sitemap.NewLocation("https://example.com")),
+		*sitemap.NewURL(sitemap.NewLocation("https://example.com/two")).SetLastmodification(sitemap.NewLastModification("2024-01-02")),
+	)
+
+	buf, err := u.ToJSON()
+	if err != nil {
+		t.Fatalf("Failed to marshal to TXT: %s\n", err)
+	}
+
+	if !bytes.Equal(buf, []byte("{\"urlset\":{\"url\":[{\"loc\":\"https://example.com\"},{\"loc\":\"https://example.com/two\",\"lastmod\":\"2024-01-02\"}]}}")) {
+		t.Fatalf("Invalid result: \n%s\n", buf)
+	}
+}

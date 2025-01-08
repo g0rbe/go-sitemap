@@ -14,11 +14,11 @@ import (
 //	  <priority>0.8</priority>
 //	</url>
 type URL struct {
-	Location   *Location         `xml:"loc"`
-	LastMod    *LastModification `xml:"lastmod,omitempty"`
-	ChangeFreq *ChangeFrequency  `xml:"changefreq,omitempty"`
-	Priority   *Priority         `xml:"priority,omitempty"`
-	Comment    []byte            `xml:",comment"`
+	Location   *Location         `xml:"loc" json:"loc"`
+	LastMod    *LastModification `xml:"lastmod,omitempty" json:"lastmod,omitempty"`
+	ChangeFreq *ChangeFrequency  `xml:"changefreq,omitempty" json:"changefreq,omitempty"`
+	Priority   *Priority         `xml:"priority,omitempty" json:"priority,omitempty"`
+	Comment    []byte            `xml:",comment" json:"-"`
 }
 
 // NewURL returns a new URL with the given fields set.

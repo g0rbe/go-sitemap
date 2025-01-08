@@ -37,3 +37,20 @@ func TestIndex(t *testing.T) {
 	}
 
 }
+
+func TestIndexToJSON(t *testing.T) {
+
+	i := sitemap.NewIndex(
+		*sitemap.NewURL(sitemap.NewLocation("https://example.com")),
+		*sitemap.NewURL(sitemap.NewLocation("https://example.com/two")).SetLastmodification(sitemap.NewLastModification("2024-01-02")),
+	)
+
+	buf, err := i.ToJSON()
+	if err != nil {
+		t.Fatalf("Failed to marshal to TXT: %s\n", err)
+	}
+
+	if !bytes.Equal(buf, []byte(`{"sitemapindex":{"sitemap":[{"loc":"https://example.com"},{"loc":"https://example.com/two","lastmod":"2024-01-02"}]}}`)) {
+		t.Fatalf("Invalid result: \n%s\n", buf)
+	}
+}

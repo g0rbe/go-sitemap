@@ -2,6 +2,7 @@ package sitemap
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -22,7 +23,7 @@ var (
 //	  </url>
 //	</urlset>
 type URLSet struct {
-	URLs []URL `xml:"url"`
+	URLs []URL `xml:"url" json:"url"`
 }
 
 // NewURLSet returns a new URLSet with the given URLs.
@@ -92,6 +93,18 @@ func (u *URLSet) ToTXT() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (u *URLSet) ToJSON() ([]byte, error) {
+
+	v := struct {
+		URLSet *URLSet `json:"urlset"`
+	}{
+		URLSet: u,
+	}
+
+	return json.Marshal(v)
+
 }
 
 func (u *URLSet) MarshalXML(e *xml.Encoder, start xml.StartElement) error {

@@ -2,6 +2,7 @@ package sitemap
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 )
@@ -19,7 +20,7 @@ import (
 //	  </sitemap>
 //	</sitemapindex>
 type Index struct {
-	Sitemaps []URL `xml:"sitemap"`
+	Sitemaps []URL `xml:"sitemap" json:"sitemap"`
 }
 
 // NewINdex returns a new Index with the given Sitemap Entries.
@@ -68,6 +69,17 @@ func (i *Index) ToXML() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (i *Index) ToJSON() ([]byte, error) {
+
+	v := struct {
+		Index *Index `json:"sitemapindex"`
+	}{
+		Index: i,
+	}
+
+	return json.Marshal(v)
 }
 
 func (i *Index) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
