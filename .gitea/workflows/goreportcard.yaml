@@ -1,0 +1,11 @@
+name: Go
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+     
+      - name: Refresh Go Report Card
+        run: /usr/bin/wget --post-data='repo=git.gorbe.io/go/sitemap' 'https://goreportcard.com/checks'
