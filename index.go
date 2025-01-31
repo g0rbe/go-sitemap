@@ -1,10 +1,7 @@
 package sitemap
 
 import (
-	"bytes"
-	"encoding/json"
 	"encoding/xml"
-	"fmt"
 )
 
 // Index encapsulates information about all of the Sitemaps in the file.
@@ -20,115 +17,14 @@ import (
 //	  </sitemap>
 //	</sitemapindex>
 type Index struct {
-	Sitemaps []URL `xml:"sitemap" json:"sitemap"`
+	XMLName   xml.Name `xml:"sitemapindex"`
+	NameSpace string   `xml:"xmlns,attr"`
+	Sitemap   []URL    `xml:"sitemap"`
 }
 
 // NewINdex returns a new Index with the given Sitemap Entries.
 //
 // This function sets the XMLName to "sitemapindex".
 func NewIndex(sitemaps ...URL) *Index {
-	return &Index{Sitemaps: sitemaps}
-}
-
-// ReadURLSet reads the Sitemap from r.
-//
-// If r contains Sitemap Index, returns ErrSitemapIndex.
-func ParseIndex(data []byte) (*Index, error) {
-
-	if !IsIndex(data) {
-		return nil, fmt.Errorf("not index")
-	}
-
-	i := new(Index)
-
-	err := xml.Unmarshal(data, i)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal: %w", err)
-	}
-
-	return i, nil
-}
-
-func (i *Index) ToXML() ([]byte, error) {
-
-	data, err := xml.Marshal(i)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal: %w", err)
-	}
-
-	buf := new(bytes.Buffer)
-
-	_, err = buf.Write([]byte(xml.Header))
-	if err != nil {
-		return nil, fmt.Errorf("failed to write XML header: %w", err)
-	}
-
-	_, err = buf.Write(data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write data: %w", err)
-	}
-
-	return buf.Bytes(), nil
-}
-
-func (i *Index) ToXMLIndent() ([]byte, error) {
-
-	data, err := xml.MarshalIndent(i, "", "\t")
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal: %w", err)
-	}
-
-	buf := new(bytes.Buffer)
-
-	_, err = buf.Write([]byte(xml.Header))
-	if err != nil {
-		return nil, fmt.Errorf("failed to write XML header: %w", err)
-	}
-
-	_, err = buf.Write(data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write data: %w", err)
-	}
-
-	return buf.Bytes(), nil
-}
-func (i *Index) ToJSON() ([]byte, error) {
-
-	v := struct {
-		Index *Index `json:"sitemapindex"`
-	}{
-		Index: i,
-	}
-
-	return json.Marshal(v)
-}
-
-func (i *Index) ToJSONIndent() ([]byte, error) {
-
-	v := struct {
-		Index *Index `json:"sitemapindex"`
-	}{
-		Index: i,
-	}
-
-	return json.MarshalIndent(v, "", "\t")
-}
-
-func (i *Index) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-
-	// Change the start and end tag to "sitemapindex"
-	if start.Name.Local != "sitemapindex" {
-		start.Name.Local = "sitemapindex"
-	}
-
-	// Append "xmlns" attribute
-	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns"}, Value: XMLNameSpace})
-
-	v := struct {
-		Sitemaps []URL `xml:"sitemap"`
-	}{
-		Sitemaps: i.Sitemaps,
-	}
-
-	return e.EncodeElement(v, start)
+	return &Index{NameSpace: XMLNameSpace, Sitemap: sitemaps}
 }

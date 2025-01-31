@@ -1,7 +1,7 @@
 package sitemap
 
 import (
-	"encoding/xml"
+	"bytes"
 	"strings"
 )
 
@@ -14,55 +14,59 @@ import (
 //	  <priority>0.8</priority>
 //	</url>
 type URL struct {
-	Location   *Location         `xml:"loc" json:"loc"`
-	LastMod    *LastModification `xml:"lastmod,omitempty" json:"lastmod,omitempty"`
-	ChangeFreq *ChangeFrequency  `xml:"changefreq,omitempty" json:"changefreq,omitempty"`
-	Priority   *Priority         `xml:"priority,omitempty" json:"priority,omitempty"`
-	Comment    []byte            `xml:",comment" json:"-"`
+	Location   Location         `xml:"loc"`
+	LastMod    LastModification `xml:"lastmod,omitempty"`
+	ChangeFreq ChangeFrequency  `xml:"changefreq,omitempty" `
+	Priority   Priority         `xml:"priority,omitempty" `
 }
 
 // NewURL returns a new URL with the given fields set.
-// If any field is nil, it will be omotted.
-//
-// This function sets the XMLName to "url".
-func NewURL(loc *Location) *URL {
-	return &URL{Location: loc}
+// If any field is nil, it will be omitted.
+func NewURL(loc string) *URL {
+	return &URL{Location: bytes.Clone(Location(loc))}
 }
 
-// SetLastmodification lastmod in URL u and returns u.
+// SetLastmodification clones lastmod to u.LastMod and returns u.
 //
 // If URL u is nil, returns nil.
-func (u *URL) SetLastmodification(lastmod *LastModification) *URL {
+func (u *URL) SetLastmodification(lastmod string) *URL {
 
 	if u == nil {
 		return nil
 	}
 
-	u.LastMod = lastmod
+	u.LastMod = bytes.Clone(LastModification(lastmod))
 	return u
 }
 
-func (u *URL) SetChangeFrequency(changefreq *ChangeFrequency) *URL {
+// SetChangeFrequency clones changefreq to u.ChangeFreq and returns u.
+//
+// If URL u is nil, returns nil.
+func (u *URL) SetChangeFrequency(changefreq string) *URL {
 
 	if u == nil {
 		return nil
 	}
 
-	u.ChangeFreq = changefreq
+	u.ChangeFreq = bytes.Clone(ChangeFrequency(changefreq))
 	return u
 }
 
-func (u *URL) SetPriority(priority *Priority) *URL {
+// SetPriority clones priority to u.Priority and returns u.
+//
+// If URL u is nil, returns nil.
+func (u *URL) SetPriority(priority string) *URL {
 
 	if u == nil {
 		return nil
 	}
 
-	u.Priority = priority
+	u.Priority = bytes.Clone(Priority(priority))
 	return u
 }
 
-func (u *URL) String() string {
+func (u URL) String() string {
+
 	buf := new(strings.Builder)
 
 	buf.WriteString(u.Location.String())
@@ -83,28 +87,4 @@ func (u *URL) String() string {
 	}
 
 	return buf.String()
-}
-
-func (u *URL) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-
-	// Change the start and end tag to "url" if not set to "url" for URLSet or "sitemap" for Index.
-	if start.Name.Local != "url" && start.Name.Local != "sitemap" {
-		start.Name.Local = "url"
-	}
-
-	v := struct {
-		Loc        *Location         `xml:"loc"`
-		LastMod    *LastModification `xml:"lastmod,omitempty"`
-		ChangeFreq *ChangeFrequency  `xml:"changefreq,omitempty"`
-		Priority   *Priority         `xml:"priority,omitempty"`
-		Comment    []byte            `xml:",comment"`
-	}{
-		Loc:        u.Location,
-		LastMod:    u.LastMod,
-		ChangeFreq: u.ChangeFreq,
-		Priority:   u.Priority,
-		Comment:    u.Comment,
-	}
-
-	return e.EncodeElement(v, start)
 }

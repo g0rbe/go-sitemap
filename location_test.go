@@ -8,27 +8,30 @@ import (
 	"git.gorbe.io/go/sitemap"
 )
 
-func TestLoc(t *testing.T) {
+func TestLocationXMLMarhsal(t *testing.T) {
 
-	l1 := sitemap.NewLocation("https://gorbe.io/test")
+	loc := sitemap.Location("https://gorbe.io/test")
 
-	out, err := xml.Marshal(l1)
+	out, err := xml.Marshal(loc)
 	if err != nil {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
 
-	if !bytes.Equal(out, []byte("<loc>https://gorbe.io/test</loc>")) {
+	if !bytes.Equal(out, []byte("<Location>https://gorbe.io/test</Location>")) {
 		t.Fatalf("Invalid data: %s\n", out)
 	}
+}
 
-	var l2 = new(sitemap.Location)
+func TestLocationXMLUnmarhsal(t *testing.T) {
 
-	err = xml.Unmarshal(out, l2)
+	loc := new(sitemap.Location)
+
+	err := xml.Unmarshal([]byte("<Location>https://gorbe.io/test</Location>"), loc)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal: %s\n", err)
 	}
 
-	if l1.String() != l2.String() {
-		t.Fatalf("Invalid result: %s / %s\n", l1, l2)
+	if loc.String() != "https://gorbe.io/test" {
+		t.Fatalf("Invalid result: %s\n", loc)
 	}
 }

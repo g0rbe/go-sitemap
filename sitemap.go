@@ -2,10 +2,11 @@ package sitemap
 
 import (
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
-	"net/url"
 	"os"
 	"slices"
 	"strings"
@@ -21,7 +22,7 @@ func IsIndex(data []byte) bool {
 }
 
 type Sitemap struct {
-	URLs    []URL
+	URL     []URL
 	isIndex bool
 	m       *sync.RWMutex
 }
@@ -32,50 +33,69 @@ func New() *Sitemap {
 	return s
 }
 
-// Parse reads the Sitemap from data.
-func Parse(data []byte) (*Sitemap, error) {
+func ParseXMLIndex(data []byte) (*Sitemap, error) {
+	sm := New()
+	sm.isIndex = true
 
-	s := New()
+	index := NewIndex()
 
-	if IsIndex(data) {
-		i, err := ParseIndex(data)
-		if err != nil {
-			return nil, fmt.Errorf("filed to parse Index: %w", err)
-		}
-		s.isIndex = true
-		s.URLs = i.Sitemaps
-	} else {
-		u, err := ParseURLSet(data)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse URLSet: %w", err)
-		}
-
-		s.URLs = u.URLs
+	err := xml.Unmarshal(data, index)
+	if err != nil {
+		return nil, err
 	}
 
-	return s, nil
+	sm.URL = index.Sitemap
+
+	return sm, nil
+}
+
+func ParseXMLURLSet(data []byte) (*Sitemap, error) {
+
+	sm := New()
+	sm.isIndex = true
+
+	urlset := NewURLSet()
+
+	err := xml.Unmarshal(data, urlset)
+	if err != nil {
+		return nil, err
+	}
+
+	sm.URL = urlset.URL
+
+	return sm, nil
+}
+
+// Parse reads the Sitemap from data.
+func ParseXML(data []byte) (*Sitemap, error) {
+
+	if IsIndex(data) {
+		return ParseXMLIndex(data)
+	} else {
+		return ParseXMLURLSet(data)
+	}
 }
 
 // Read reads the Sitemap from r.
-func Read(r io.Reader) (*Sitemap, error) {
+func ReadXML(r io.Reader) (*Sitemap, error) {
 
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
 
-	return Parse(data)
+	return ParseXML(data)
 }
 
 // ReadFile reads the Sitemap from file the named file.
-func ReadFile(name string) (*Sitemap, error) {
+func ReadXMLFile(name string) (*Sitemap, error) {
 
 	data, err := os.ReadFile(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
 
-	return Parse(data)
+	return ParseXML(data)
 }
 
 // Fetch fetches the Sitemap from url.
@@ -93,15 +113,23 @@ func Fetch(url string) (*Sitemap, error) {
 		return nil, fmt.Errorf("%d", resp.StatusCode)
 	}
 
-	return Read(resp.Body)
+	mediatype, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse Content-Type: %w", err)
+	}
+
+	switch mediatype {
+	case "text/xml":
+		return ReadXML(resp.Body)
+	default:
+		return nil, fmt.Errorf("unknown Content-Type: %s", mediatype)
+	}
+
 }
 
-func Crawler(loc string, current *Sitemap) (*Sitemap, error) {
+func CrawlHostname(hostname string, current *Sitemap) (*Sitemap, error) {
 
-	target, err := url.Parse(loc)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %w", loc, err)
-	}
+	var err error
 
 	result := current
 	if result == nil {
@@ -109,30 +137,30 @@ func Crawler(loc string, current *Sitemap) (*Sitemap, error) {
 	}
 
 	c := colly.NewCollector(
-		colly.AllowedDomains(target.Hostname()),
+		colly.AllowedDomains(hostname),
 		colly.ParseHTTPErrorResponse(),
 	)
 
 	c.OnError(func(r *colly.Response, reqErr error) {
-		if r.StatusCode != 404 && err != nil {
+		if r.StatusCode != 404 {
 			err = fmt.Errorf("\"%s\": %w", r.Request.URL, reqErr)
 		}
 		result.RemoveURL(r.Request.URL.String())
 	})
 
 	c.OnResponse(func(r *colly.Response) {
-		result.SetURL(NewURL(NewLocation(r.Request.URL.String())))
+		result.SetURL(NewURL(r.Request.URL.String()))
 	})
 
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		c.Visit(e.Request.AbsoluteURL(e.Attr("href")))
 	})
 
-	c.Visit(target.String())
+	c.Visit("http://" + hostname + "/")
 
 	if current != nil {
-		for i := range current.URLs {
-			c.Visit(current.URLs[i].Location.String())
+		for i := range current.URL {
+			c.Visit(current.URL[i].Location.String())
 		}
 	}
 
@@ -144,15 +172,25 @@ func (s *Sitemap) ToXML() ([]byte, error) {
 	s.m.RLock()
 	defer s.m.RUnlock()
 
+	var data []byte
+	var err error
+
 	if s.isIndex {
-		i := new(Index)
-		i.Sitemaps = s.URLs
-		return i.ToXML()
+		index := NewIndex(s.URL...)
+		data, err = xml.Marshal(index)
+	} else {
+		urlset := NewURLSet(s.URL...)
+		data, err = xml.Marshal(urlset)
 	}
 
-	u := new(URLSet)
-	u.URLs = s.URLs
-	return u.ToXML()
+	if err != nil {
+		return nil, err
+	}
+
+	buf := bytes.Clone([]byte(xml.Header))
+	buf = append(buf, data...)
+
+	return buf, nil
 }
 
 func (s *Sitemap) ToXMLIndent() ([]byte, error) {
@@ -160,15 +198,25 @@ func (s *Sitemap) ToXMLIndent() ([]byte, error) {
 	s.m.RLock()
 	defer s.m.RUnlock()
 
+	var data []byte
+	var err error
+
 	if s.isIndex {
-		i := new(Index)
-		i.Sitemaps = s.URLs
-		return i.ToXMLIndent()
+		index := NewIndex(s.URL...)
+		data, err = xml.MarshalIndent(index, "", "\t")
+	} else {
+		urlset := NewURLSet(s.URL...)
+		data, err = xml.MarshalIndent(urlset, "", "\t")
 	}
 
-	u := new(URLSet)
-	u.URLs = s.URLs
-	return u.ToXMLIndent()
+	if err != nil {
+		return nil, err
+	}
+
+	buf := bytes.Clone([]byte(xml.Header))
+	buf = append(buf, data...)
+
+	return buf, nil
 }
 
 func (s *Sitemap) ToTXT() ([]byte, error) {
@@ -178,48 +226,16 @@ func (s *Sitemap) ToTXT() ([]byte, error) {
 
 	buf := new(bytes.Buffer)
 
-	for i := range s.URLs {
+	for i := range s.URL {
 
 		// Write Location + "\n"
-		_, err := buf.WriteString(s.URLs[i].Location.String() + "\n")
+		_, err := buf.WriteString(s.URL[i].Location.String() + "\n")
 		if err != nil {
-			return nil, fmt.Errorf("failed to write %s: %w", s.URLs[i].Location, err)
+			return nil, fmt.Errorf("failed to write %s: %w", s.URL[i].Location, err)
 		}
 	}
 
 	return buf.Bytes(), nil
-}
-
-func (s *Sitemap) ToJSON() ([]byte, error) {
-
-	s.m.RLock()
-	defer s.m.RUnlock()
-
-	if s.isIndex {
-		i := new(Index)
-		i.Sitemaps = s.URLs
-		return i.ToJSON()
-	}
-
-	u := new(URLSet)
-	u.URLs = s.URLs
-	return u.ToJSON()
-}
-
-func (s *Sitemap) ToJSONIndent() ([]byte, error) {
-
-	s.m.RLock()
-	defer s.m.RUnlock()
-
-	if s.isIndex {
-		i := new(Index)
-		i.Sitemaps = s.URLs
-		return i.ToJSONIndent()
-	}
-
-	u := new(URLSet)
-	u.URLs = s.URLs
-	return u.ToJSONIndent()
 }
 
 func (s *Sitemap) IsIndex() bool {
@@ -237,8 +253,8 @@ func (s *Sitemap) String() string {
 
 	buf := new(strings.Builder)
 
-	for i := range s.URLs {
-		buf.WriteString(s.URLs[i].String())
+	for i := range s.URL {
+		buf.WriteString(s.URL[i].String())
 		buf.WriteByte('\n')
 	}
 
@@ -254,9 +270,9 @@ func (s *Sitemap) GetURL(loc string) *URL {
 	s.m.RLock()
 	defer s.m.RUnlock()
 
-	for i := range s.URLs {
-		if s.URLs[i].Location.Equal(NewLocation(loc)) {
-			return &s.URLs[i]
+	for i := range s.URL {
+		if s.URL[i].Location.Equal(Location(loc)) {
+			return &s.URL[i]
 		}
 	}
 
@@ -272,34 +288,29 @@ func (s *Sitemap) SetURL(u *URL) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	for i := range s.URLs {
-		if s.URLs[i].Location.Equal(u.Location) {
+	for i := range s.URL {
+		if s.URL[i].Location.Equal(u.Location) {
 
 			// Set LastMod
 			if u.LastMod != nil {
-				s.URLs[i].LastMod = u.LastMod
+				s.URL[i].LastMod = u.LastMod
 			}
 
 			// Set ChangeFreq
 			if u.ChangeFreq != nil {
-				s.URLs[i].ChangeFreq = u.ChangeFreq
+				s.URL[i].ChangeFreq = u.ChangeFreq
 			}
 
 			// Set Priority
 			if u.Priority != nil {
-				s.URLs[i].Priority = u.Priority
-			}
-
-			// Set Comment
-			if u.Comment != nil {
-				s.URLs[i].Comment = u.Comment
+				s.URL[i].Priority = u.Priority
 			}
 
 			return
 		}
 	}
 
-	s.URLs = append(s.URLs, *u)
+	s.URL = append(s.URL, *u)
 }
 
 func (s *Sitemap) RemoveURL(loc string) {
@@ -313,8 +324,8 @@ func (s *Sitemap) RemoveURL(loc string) {
 
 	locIndex := -1
 
-	for i := range s.URLs {
-		if s.URLs[i].Location.String() == loc {
+	for i := range s.URL {
+		if s.URL[i].Location.String() == loc {
 			locIndex = i
 			break
 		}
@@ -326,18 +337,18 @@ func (s *Sitemap) RemoveURL(loc string) {
 
 	// Remove the first elem
 	if locIndex == 0 {
-		s.URLs = s.URLs[locIndex+1:]
+		s.URL = s.URL[locIndex+1:]
 		return
 	}
 
 	// Remove the last elem
-	if locIndex == len(s.URLs)-1 {
-		s.URLs = s.URLs[:locIndex]
+	if locIndex == len(s.URL)-1 {
+		s.URL = s.URL[:locIndex]
 		return
 	}
 
-	v := s.URLs[:locIndex]
-	s.URLs = append(v, s.URLs[locIndex+1:]...)
+	v := s.URL[:locIndex]
+	s.URL = append(v, s.URL[locIndex+1:]...)
 
 }
 
@@ -350,7 +361,7 @@ func (s *Sitemap) Size() int {
 	s.m.RLock()
 	defer s.m.RUnlock()
 
-	return len(s.URLs)
+	return len(s.URL)
 }
 
 // SortByLocation sorts the URLs by Location in ascending order.
@@ -363,7 +374,7 @@ func (s *Sitemap) SortByLocation() {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	slices.SortStableFunc(s.URLs, func(a, b URL) int {
+	slices.SortStableFunc(s.URL, func(a, b URL) int {
 		return strings.Compare(a.Location.String(), b.Location.String())
 	})
 }

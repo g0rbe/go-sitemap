@@ -8,64 +8,34 @@ import (
 	"git.gorbe.io/go/sitemap"
 )
 
-func TestURLSet(t *testing.T) {
+func TestURLSetXMLMarshal(t *testing.T) {
 
-	u1 := sitemap.NewURLSet(
-		*sitemap.NewURL(sitemap.NewLocation("https://example.com")),
-		*sitemap.NewURL(sitemap.NewLocation("https://example.com/two")).SetLastmodification(sitemap.NewLastModification("2024-01-02")),
+	urlset := sitemap.NewURLSet(
+		*sitemap.NewURL("https://example.com"),
+		*sitemap.NewURL("https://example.com/two").SetLastmodification("2024-01-02"),
 	)
 
-	data, err := u1.ToXML()
+	data, err := xml.Marshal(urlset)
 	if err != nil {
 		t.Fatalf("Failed to marshal to XML: %s\n", err)
 	}
 
-	if !bytes.Equal(data, []byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>https://example.com</loc></url><url><loc>https://example.com/two</loc><lastmod>2024-01-02</lastmod></url></urlset>")) {
+	if !bytes.Equal(data, []byte("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>https://example.com</loc></url><url><loc>https://example.com/two</loc><lastmod>2024-01-02</lastmod></url></urlset>")) {
 		t.Fatalf("Invalid data: %s\n", data)
 	}
 
-	u2 := new(sitemap.URLSet)
+}
 
-	err = xml.Unmarshal(data, u2)
+func TestURLSetXMLUnmarshal(t *testing.T) {
+
+	urlset := sitemap.NewURLSet()
+
+	err := xml.Unmarshal([]byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>https://example.com</loc></url><url><loc>https://example.com/two</loc><lastmod>2024-01-02</lastmod></url></urlset>"), urlset)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal: %s\n", err)
 	}
 
-	if len(u1.URLs) != len(u2.URLs) {
-		t.Fatalf("Invalid result: \n%#v\n%#v\n", *u1, *u2)
-	}
-}
-
-func TestURLSetToTXT(t *testing.T) {
-
-	u := sitemap.NewURLSet(
-		*sitemap.NewURL(sitemap.NewLocation("https://example.com")),
-		*sitemap.NewURL(sitemap.NewLocation("https://example.com/two")).SetLastmodification(sitemap.NewLastModification("2024-01-02")),
-	)
-
-	buf, err := u.ToTXT()
-	if err != nil {
-		t.Fatalf("Failed to marshal to TXT: %s\n", err)
-	}
-
-	if !bytes.Equal(buf, []byte("https://example.com\nhttps://example.com/two\n")) {
-		t.Fatalf("Invalid result: %s\n", buf)
-	}
-}
-
-func TestURLSetToJSON(t *testing.T) {
-
-	u := sitemap.NewURLSet(
-		*sitemap.NewURL(sitemap.NewLocation("https://example.com")),
-		*sitemap.NewURL(sitemap.NewLocation("https://example.com/two")).SetLastmodification(sitemap.NewLastModification("2024-01-02")),
-	)
-
-	buf, err := u.ToJSON()
-	if err != nil {
-		t.Fatalf("Failed to marshal to TXT: %s\n", err)
-	}
-
-	if !bytes.Equal(buf, []byte("{\"urlset\":{\"url\":[{\"loc\":\"https://example.com\"},{\"loc\":\"https://example.com/two\",\"lastmod\":\"2024-01-02\"}]}}")) {
-		t.Fatalf("Invalid result: \n%s\n", buf)
+	if len(urlset.URL) != 2 {
+		t.Fatalf("Invalid result: \n%#v\n", urlset)
 	}
 }

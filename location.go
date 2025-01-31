@@ -1,9 +1,8 @@
 package sitemap
 
 import (
-	"encoding/xml"
+	"bytes"
 	"net/url"
-	"strings"
 )
 
 // Location is the URL of the page. This URL must begin with the protocol (such as http) and end with a trailing slash, if your web server requires it. This value must be less than 2,048 characters.
@@ -11,44 +10,20 @@ import (
 // Example:
 //
 //	<loc>http://www.example.com/</loc>
-type Location string
+type Location []byte
 
-// NewLocation returns a new Location with the given value v.
-func NewLocation[T string | *url.URL](v T) *Location {
-
-	switch t := any(v).(type) {
-	case string:
-		return (*Location)(&t)
-	case *url.URL:
-		r := t.String()
-		return (*Location)(&r)
-	default:
-		return nil
-	}
-}
-
-func (l *Location) Equal(loc *Location) bool {
+func (l Location) Equal(loc Location) bool {
 	if l == nil || loc == nil {
 		return false
 	}
 
-	return strings.Compare(l.String(), loc.String()) == 0
+	return bytes.Equal(l, loc)
 }
 
-func (l *Location) URL() (*url.URL, error) {
+func (l Location) URL() (*url.URL, error) {
 	return url.Parse(l.String())
 }
 
-func (l *Location) String() string {
-	return string(*l)
-}
-
-func (l *Location) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-
-	// CHange the start and end tag to "loc"
-	if start.Name.Local != "loc" {
-		start.Name.Local = "loc"
-	}
-
-	return e.EncodeElement(l.String(), start)
+func (l Location) String() string {
+	return string(l)
 }

@@ -8,27 +8,30 @@ import (
 	"git.gorbe.io/go/sitemap"
 )
 
-func TestPriority(t *testing.T) {
+func TestPriorityXMLMarhsal(t *testing.T) {
 
-	p1 := sitemap.NewPriority("0.5")
+	prio := sitemap.Priority("0.5")
 
-	out, err := xml.Marshal(p1)
+	out, err := xml.Marshal(prio)
 	if err != nil {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
 
-	if !bytes.Equal(out, []byte("<priority>0.5</priority>")) {
+	if !bytes.Equal(out, []byte("<Priority>0.5</Priority>")) {
 		t.Fatalf("Invalid data: %s\n", out)
 	}
+}
 
-	var p2 = new(sitemap.Priority)
+func TestPriorityXMLUnmarshal(t *testing.T) {
 
-	err = xml.Unmarshal(out, p2)
+	prio := new(sitemap.Priority)
+
+	err := xml.Unmarshal([]byte("<Priority>0.5</Priority>"), prio)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal: %s\n", err)
 	}
 
-	if p1.String() != p2.String() {
-		t.Fatalf("Invalid result: %s / %s\n", p1, p2)
+	if prio.String() != "0.5" {
+		t.Fatalf("Invalid result: %s\n", prio)
 	}
 }

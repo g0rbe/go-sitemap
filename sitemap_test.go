@@ -13,7 +13,7 @@ func TestFetch(t *testing.T) {
 		t.Fatalf("Failed to fetch: %s\n", err)
 	}
 
-	v, err := s.ToXML()
+	v, err := s.ToXMLIndent()
 	if err != nil {
 		t.Fatalf("Failed to convert to XML: %s\n", err)
 	}
@@ -24,10 +24,10 @@ func TestFetch(t *testing.T) {
 func TestRemoveURL(t *testing.T) {
 
 	sm := sitemap.New()
-	sm.SetURL(sitemap.NewURL(sitemap.NewLocation("https://example.com/0")))
-	sm.SetURL(sitemap.NewURL(sitemap.NewLocation("https://example.com/1")))
-	sm.SetURL(sitemap.NewURL(sitemap.NewLocation("https://example.com/2")))
-	sm.SetURL(sitemap.NewURL(sitemap.NewLocation("https://example.com/3")))
+	sm.SetURL(sitemap.NewURL("https://example.com/0"))
+	sm.SetURL(sitemap.NewURL("https://example.com/1"))
+	sm.SetURL(sitemap.NewURL("https://example.com/2"))
+	sm.SetURL(sitemap.NewURL("https://example.com/3"))
 
 	sm.RemoveURL("https://example.com/2")
 	u2 := sm.GetURL("https://example.com/2")
@@ -53,7 +53,7 @@ func TestRemoveURL(t *testing.T) {
 
 }
 func TestCrawler(t *testing.T) {
-	s, err := sitemap.Crawler("https://example.com/", nil)
+	s, err := sitemap.CrawlHostname("example.com", nil)
 	if err != nil {
 		t.Fatalf("Fail: %s\n", err)
 	}

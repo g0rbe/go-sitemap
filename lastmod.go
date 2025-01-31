@@ -1,7 +1,6 @@
 package sitemap
 
 import (
-	"encoding/xml"
 	"time"
 )
 
@@ -14,40 +13,14 @@ import (
 // Example:
 //
 //	<lastmod>2005-01-01</lastmod>
-type LastModification string
+type LastModification []byte
 
-// NewLastMod returns a new LastMod with the given value v.
-// If v is an empty string("") or zero Time, returns nil.
-func NewLastModification[T string | time.Time](v T) *LastModification {
-
-	switch t := any(v).(type) {
-	case string:
-		if t == "" {
-			return nil
-		}
-		return (*LastModification)(&t)
-
-	case time.Time:
-		if t.IsZero() {
-			return nil
-		}
-		f := t.Format(time.RFC3339)
-		return (*LastModification)(&f)
-	default:
-		return nil
-	}
-
-}
-
-func (l *LastModification) String() string {
-	return string(*l)
-}
-
-func (l *LastModification) Time() (time.Time, error) {
+// Time parses the value of LastModification and returns [time.Time] .
+func (l LastModification) Time() (time.Time, error) {
 
 	var layout string
 
-	switch len(*l) {
+	switch len(l) {
 	case 4:
 		layout = "2006"
 	case 7:
@@ -65,14 +38,8 @@ func (l *LastModification) Time() (time.Time, error) {
 	}
 
 	return time.Parse(layout, l.String())
-
 }
-func (l *LastModification) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
-	// CHange the start and end tag to "lastmod"
-	if start.Name.Local != "lastmod" {
-		start.Name.Local = "lastmod"
-	}
-
-	return e.EncodeElement(l.String(), start)
+func (l LastModification) String() string {
+	return string(l)
 }

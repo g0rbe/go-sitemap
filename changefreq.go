@@ -1,8 +1,7 @@
 package sitemap
 
 import (
-	"encoding/xml"
-	"strings"
+	"bytes"
 )
 
 // How frequently the page is likely to change. This value provides general information to search engines and may not correlate exactly to how often they crawl the page.
@@ -25,54 +24,54 @@ import (
 // Example:
 //
 //	<changefreq>monthly</changefreq>
-type ChangeFrequency string
+type ChangeFrequency []byte
 
 // Valid values for ChangeFrequency
 var (
-	ChangeFrequencyAlways  ChangeFrequency = "always"
-	ChangeFrequencyHourly  ChangeFrequency = "hourly"
-	ChangeFrequencyDaily   ChangeFrequency = "daily"
-	ChangeFrequencyWeekly  ChangeFrequency = "weekly"
-	ChangeFrequencyMonthly ChangeFrequency = "monthly"
-	ChangeFrequencyYearly  ChangeFrequency = "yearly"
-	ChangeFrequencyNever   ChangeFrequency = "never"
+	ChangeFrequencyAlways  ChangeFrequency = []byte("always")
+	ChangeFrequencyHourly  ChangeFrequency = []byte("hourly")
+	ChangeFrequencyDaily   ChangeFrequency = []byte("daily")
+	ChangeFrequencyWeekly  ChangeFrequency = []byte("weekly")
+	ChangeFrequencyMonthly ChangeFrequency = []byte("monthly")
+	ChangeFrequencyYearly  ChangeFrequency = []byte("yearly")
+	ChangeFrequencyNever   ChangeFrequency = []byte("never")
 )
 
 // ParseChangeFrequency parses ChangeFrequency from v.
 //
 // If v is not a valid value for ChangeFrequency, returns nil.
-func ParseChangeFrequency(v string) *ChangeFrequency {
+func (c ChangeFrequency) IsValid() bool {
 
-	switch strings.ToLower(v) {
-	case "always":
-		return &ChangeFrequencyAlways
-	case "hourly":
-		return &ChangeFrequencyHourly
-	case "daily":
-		return &ChangeFrequencyDaily
-	case "weekly":
-		return &ChangeFrequencyWeekly
-	case "monthly":
-		return &ChangeFrequencyMonthly
-	case "yearly":
-		return &ChangeFrequencyYearly
-	case "never":
-		return &ChangeFrequencyNever
+	switch v := bytes.ToLower(c); true {
+	case bytes.Equal(v, ChangeFrequencyAlways):
+		return true
+	case bytes.Equal(v, ChangeFrequencyHourly):
+		return true
+	case bytes.Equal(v, ChangeFrequencyDaily):
+		return true
+	case bytes.Equal(v, ChangeFrequencyWeekly):
+		return true
+	case bytes.Equal(v, ChangeFrequencyMonthly):
+		return true
+	case bytes.Equal(v, ChangeFrequencyYearly):
+		return true
+	case bytes.Equal(v, ChangeFrequencyNever):
+		return true
 	default:
-		return nil
+		return false
 	}
 }
 
-func (c *ChangeFrequency) String() string {
-	return string(*c)
+func (c ChangeFrequency) String() string {
+	return string(c)
 }
 
-func (c *ChangeFrequency) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+// func (c *ChangeFrequency) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
-	// Change the start and end tag to "changefreq"
-	if start.Name.Local != "changefreq" {
-		start.Name.Local = "changefreq"
-	}
+// 	// Change the start and end tag to "changefreq"
+// 	if start.Name.Local != "changefreq" {
+// 		start.Name.Local = "changefreq"
+// 	}
 
-	return e.EncodeElement(c.String(), start)
-}
+// 	return e.EncodeElement(c.String(), start)
+// }

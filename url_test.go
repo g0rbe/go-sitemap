@@ -11,14 +11,14 @@ import (
 
 func TestURL(t *testing.T) {
 
-	u1 := sitemap.NewURL(sitemap.NewLocation("https://example.com")).SetLastmodification(sitemap.NewLastModification("1970-01-01"))
+	u1 := sitemap.NewURL("https://example.com").SetLastmodification("1970-01-01")
 
 	out, err := xml.Marshal(u1)
 	if err != nil {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
 
-	if !bytes.Equal(out, []byte("<url><loc>https://example.com</loc><lastmod>1970-01-01</lastmod></url>")) {
+	if !bytes.Equal(out, []byte("<URL><loc>https://example.com</loc><lastmod>1970-01-01</lastmod></URL>")) {
 		t.Fatalf("Invalid data: %s\n", out)
 	}
 
@@ -37,10 +37,10 @@ func TestURL(t *testing.T) {
 
 func ExampleNewURL() {
 
-	u := sitemap.NewURL(sitemap.NewLocation("https://example.com")).
-		SetLastmodification(sitemap.NewLastModification("1970-01-01")).
-		SetChangeFrequency(&sitemap.ChangeFrequencyNever).
-		SetPriority(sitemap.NewPriority("1.0"))
+	u := sitemap.NewURL("https://example.com").
+		SetLastmodification("1970-01-01").
+		SetChangeFrequency(sitemap.ChangeFrequencyNever.String()).
+		SetPriority("1.0")
 
 	fmt.Printf("%s\n", u)
 	// Output: https://example.com 1970-01-01 never 1.0
