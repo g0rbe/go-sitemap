@@ -2,11 +2,6 @@ package sitemap
 
 import (
 	"encoding/xml"
-	"errors"
-)
-
-var (
-	ErrSitemapIndex = errors.New("sitemap is index")
 )
 
 // URLSet encapsulates the file and references the current protocol standard.
@@ -19,13 +14,45 @@ var (
 //	    <priority>0.8</priority>
 //	  </url>
 //	</urlset>
-type URLSet struct {
-	XMLName   xml.Name `xml:"urlset"`
-	NameSpace string   `xml:"xmlns,attr"`
-	URL       []URL    `xml:"url"`
+type URLSet []URL
+
+func (s URLSet) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	// Add xml.Header before encoding
+	err := e.EncodeToken(xml.ProcInst{Target: "xml", Inst: []byte("version=\"1.0\" encoding=\"UTF-8\"")})
+	if err != nil {
+		return err
+	}
+
+	// Set the first token name to "sitemapindex"
+	if start.Name.Local != "urlset" {
+		start.Name.Local = "urlset"
+	}
+
+	// Set "xmlns" attribute
+	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns"}, Value: XMLNameSpace})
+
+	v := struct {
+		URL []URL `xml:"url"`
+	}{
+		URL: s,
+	}
+
+	return e.EncodeElement(v, start)
 }
 
-// NewURLSet returns a new URLSet with the given URLs.
-func NewURLSet(urls ...URL) *URLSet {
-	return &URLSet{NameSpace: XMLNameSpace, URL: urls}
+func (s *URLSet) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+
+	v := struct {
+		URL []URL `xml:"url"`
+	}{}
+
+	err := d.DecodeElement(&v, &start)
+	if err != nil {
+		return err
+	}
+
+	*s = v.URL
+
+	return nil
 }

@@ -1,11 +1,14 @@
 package sitemap
 
 import (
-	"bytes"
-	"strings"
+	"net/url"
+	"strconv"
+	"time"
 )
 
 // URL is the parent tag for each URL entry. The remaining tags are children of this tag.
+//
+// Example:
 //
 //	<url>
 //	  <loc>http://www.example.com/</loc>
@@ -14,77 +17,45 @@ import (
 //	  <priority>0.8</priority>
 //	</url>
 type URL struct {
-	Location   Location         `xml:"loc"`
-	LastMod    LastModification `xml:"lastmod,omitempty"`
-	ChangeFreq ChangeFrequency  `xml:"changefreq,omitempty" `
-	Priority   Priority         `xml:"priority,omitempty" `
-}
-
-// NewURL returns a new URL with the given fields set.
-// If any field is nil, it will be omitted.
-func NewURL(loc string) *URL {
-	return &URL{Location: bytes.Clone(Location(loc))}
-}
-
-// SetLastmodification clones lastmod to u.LastMod and returns u.
-//
-// If URL u is nil, returns nil.
-func (u *URL) SetLastmodification(lastmod string) *URL {
-
-	if u == nil {
-		return nil
-	}
-
-	u.LastMod = bytes.Clone(LastModification(lastmod))
-	return u
-}
-
-// SetChangeFrequency clones changefreq to u.ChangeFreq and returns u.
-//
-// If URL u is nil, returns nil.
-func (u *URL) SetChangeFrequency(changefreq string) *URL {
-
-	if u == nil {
-		return nil
-	}
-
-	u.ChangeFreq = bytes.Clone(ChangeFrequency(changefreq))
-	return u
-}
-
-// SetPriority clones priority to u.Priority and returns u.
-//
-// If URL u is nil, returns nil.
-func (u *URL) SetPriority(priority string) *URL {
-
-	if u == nil {
-		return nil
-	}
-
-	u.Priority = bytes.Clone(Priority(priority))
-	return u
+	Location         string `xml:"loc"`
+	LastModification string `xml:"lastmod,omitempty"`
+	ChangeFrequency  string `xml:"changefreq,omitempty" `
+	Priority         string `xml:"priority,omitempty" `
 }
 
 func (u URL) String() string {
 
-	buf := new(strings.Builder)
+	return u.Location
+}
 
-	buf.WriteString(u.Location.String())
+func (u *URL) GetLocation() (*url.URL, error) {
+	return url.Parse(u.Location)
+}
 
-	if u.LastMod != nil {
-		buf.WriteByte(' ')
-		buf.WriteString(u.LastMod.String())
+func (u *URL) GetLastModification() (time.Time, error) {
+
+	var layout string
+
+	switch len(u.LastModification) {
+	case 4:
+		layout = "2006"
+	case 7:
+		layout = "2006-01"
+	case 10:
+		layout = "2006-01-02"
+	case 20:
+		layout = "2006-01-02T15:04:05Z"
+	case 24:
+		layout = "2006-01-02T15:04:05.999Z"
+	case 25:
+		layout = "2006-01-02T15:04:05.999999999Z07:00"
+	default:
+		layout = time.RFC3339Nano
 	}
 
-	if u.ChangeFreq != nil {
-		buf.WriteByte(' ')
-		buf.WriteString(u.ChangeFreq.String())
-	}
+	return time.Parse(layout, u.LastModification)
+}
 
-	if u.Priority != nil {
-		buf.WriteByte(' ')
-		buf.WriteString(u.Priority.String())
-	}
-
-	return buf.String()
+func (u *URL) GetPriority() (float64, error) {
+	return strconv.ParseFloat(u.Priority, 64)
 }

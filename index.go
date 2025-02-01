@@ -1,8 +1,6 @@
 package sitemap
 
-import (
-	"encoding/xml"
-)
+import "encoding/xml"
 
 // Index encapsulates information about all of the Sitemaps in the file.
 //
@@ -16,15 +14,45 @@ import (
 //	    <lastmod>2005-01-01</lastmod>
 //	  </sitemap>
 //	</sitemapindex>
-type Index struct {
-	XMLName   xml.Name `xml:"sitemapindex"`
-	NameSpace string   `xml:"xmlns,attr"`
-	Sitemap   []URL    `xml:"sitemap"`
+type Index []URL
+
+func (i Index) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	// Add xml.Header before encoding
+	err := e.EncodeToken(xml.ProcInst{Target: "xml", Inst: []byte("version=\"1.0\" encoding=\"UTF-8\"")})
+	if err != nil {
+		return err
+	}
+
+	// Set the first token name to "sitemapindex"
+	if start.Name.Local != "sitemapindex" {
+		start.Name.Local = "sitemapindex"
+	}
+
+	// Set "xmlns" attribute
+	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns"}, Value: XMLNameSpace})
+
+	v := struct {
+		URL []URL `xml:"sitemap"`
+	}{
+		URL: i,
+	}
+
+	return e.EncodeElement(v, start)
 }
 
-// NewINdex returns a new Index with the given Sitemap Entries.
-//
-// This function sets the XMLName to "sitemapindex".
-func NewIndex(sitemaps ...URL) *Index {
-	return &Index{NameSpace: XMLNameSpace, Sitemap: sitemaps}
+func (i *Index) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+
+	v := struct {
+		URL []URL `xml:"sitemap"`
+	}{}
+
+	err := d.DecodeElement(&v, &start)
+	if err != nil {
+		return err
+	}
+
+	*i = v.URL
+
+	return nil
 }

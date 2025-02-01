@@ -9,11 +9,11 @@ import (
 	"git.gorbe.io/go/sitemap"
 )
 
-func TestURL(t *testing.T) {
+func TestURLXMLMarshal(t *testing.T) {
 
-	u1 := sitemap.NewURL("https://example.com").SetLastmodification("1970-01-01")
+	u := sitemap.URL{Location: "https://example.com", LastModification: "1970-01-01"}
 
-	out, err := xml.Marshal(u1)
+	out, err := xml.Marshal(u)
 	if err != nil {
 		t.Fatalf("Failed to marshal: %s\n", err)
 	}
@@ -21,27 +21,26 @@ func TestURL(t *testing.T) {
 	if !bytes.Equal(out, []byte("<URL><loc>https://example.com</loc><lastmod>1970-01-01</lastmod></URL>")) {
 		t.Fatalf("Invalid data: %s\n", out)
 	}
+}
 
-	var u2 = new(sitemap.URL)
+func TestURLXMLUnmarshal(t *testing.T) {
 
-	err = xml.Unmarshal(out, u2)
+	var u = new(sitemap.URL)
+
+	err := xml.Unmarshal([]byte("<URL><loc>https://example.com</loc><lastmod>1970-01-01</lastmod></URL>"), u)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal: %s\n", err)
 	}
 
-	if u1.String() != u2.String() {
-		t.Fatalf("Invalid result: %s / %s\n", u1, u2)
+	if u.String() != "https://example.com" {
+		t.Fatalf("Invalid result: %s\n", u)
 	}
-
 }
 
-func ExampleNewURL() {
+func ExampleURL() {
 
-	u := sitemap.NewURL("https://example.com").
-		SetLastmodification("1970-01-01").
-		SetChangeFrequency(sitemap.ChangeFrequencyNever.String()).
-		SetPriority("1.0")
+	u := sitemap.URL{Location: "https://example.com", LastModification: "1970-01-01", ChangeFrequency: "never", Priority: "1.0"}
 
 	fmt.Printf("%s\n", u)
-	// Output: https://example.com 1970-01-01 never 1.0
+	// Output: https://example.com
 }
