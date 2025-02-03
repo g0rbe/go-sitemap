@@ -18,6 +18,7 @@ var (
 	format      string
 	outName     string
 	outFile     *os.File
+	sortFlag    bool
 )
 
 func init() {
@@ -28,6 +29,7 @@ func init() {
 	flag.StringVar(&currentFlag, "current", "", "URL of the current sitemap to update")
 	flag.StringVar(&format, "format", "xml", "Format out the output sitemap (\"xml\" / \"xmli\" / \"txt\")")
 	flag.StringVar(&outName, "out", "/dev/stdout", "Name of output file")
+	flag.BoolVar(&sortFlag, "sort", false, "Sort the locations in alphabetical ascending")
 
 	flag.Parse()
 
@@ -125,6 +127,9 @@ func main() {
 
 	fmt.Fprintf(os.Stderr, "[i] Found %d location on \"%s\"\n", sm.Size(), urlFlag)
 
+	if sortFlag {
+		sm.SortByLocation()
+	}
 	var buf []byte
 
 	switch format {
