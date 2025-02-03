@@ -10,7 +10,7 @@ import (
 
 func TestSitemapXMLMarshalURLSet(t *testing.T) {
 
-	sm := sitemap.New()
+	sm := sitemap.NewSitemap()
 
 	sm.URL = append(sm.URL, sitemap.URL{Location: "https://example.com"})
 	sm.URL = append(sm.URL, sitemap.URL{Location: "https://example.com/two", LastModification: "2024-01-02"})
@@ -28,7 +28,7 @@ func TestSitemapXMLMarshalURLSet(t *testing.T) {
 
 func TestSitemapXMLUnmarshalURLSet(t *testing.T) {
 
-	sm := sitemap.New()
+	sm := sitemap.NewSitemap()
 
 	err := xml.Unmarshal([]byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>https://example.com</loc></url><url><loc>https://example.com/two</loc><lastmod>2024-01-02</lastmod></url></urlset>"), &sm)
 	if err != nil {
@@ -42,7 +42,7 @@ func TestSitemapXMLUnmarshalURLSet(t *testing.T) {
 
 func TestSitemapXMLMarshalIndex(t *testing.T) {
 
-	sm := sitemap.New()
+	sm := sitemap.NewSitemap()
 	sm.SetIndex(true)
 
 	sm.URL = append(sm.URL, sitemap.URL{Location: "https://example.com"})
@@ -61,7 +61,7 @@ func TestSitemapXMLMarshalIndex(t *testing.T) {
 
 func TestSitemapXMLUnmarshalIndex(t *testing.T) {
 
-	sm := sitemap.New()
+	sm := sitemap.NewSitemap()
 
 	err := xml.Unmarshal([]byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?><sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><sitemap><loc>https://example.com</loc></sitemap><sitemap><loc>https://example.com/two</loc><lastmod>2024-01-02</lastmod></sitemap></sitemapindex>"), &sm)
 	if err != nil {
@@ -75,7 +75,7 @@ func TestSitemapXMLUnmarshalIndex(t *testing.T) {
 
 func TestSitemapSetIndex(t *testing.T) {
 
-	sm := sitemap.New()
+	sm := sitemap.NewSitemap()
 
 	if sm.IsIndex() != false {
 		t.Fatalf("New Sitemap should not be Index\n")
@@ -97,7 +97,7 @@ func TestSitemapSetIndex(t *testing.T) {
 
 func TestSitemapGetURL(t *testing.T) {
 
-	sm := sitemap.New()
+	sm := sitemap.NewSitemap()
 	sm.AppendURL(sitemap.URL{Location: "https://example.com"})
 	sm.AppendURL(sitemap.URL{Location: "https://example.com/two", LastModification: "2024-01-02"})
 
@@ -114,7 +114,7 @@ func TestSitemapGetURL(t *testing.T) {
 
 func TestSitemapSortByLocation(t *testing.T) {
 
-	sm := sitemap.New()
+	sm := sitemap.NewSitemap()
 	sm.AppendURL(sitemap.URL{Location: "https://example.com/b"})
 	sm.AppendURL(sitemap.URL{Location: "https://example.com/c", LastModification: "2024-01-01"})
 	sm.AppendURL(sitemap.URL{Location: "https://example.com/a", LastModification: "2024-01-02"})
@@ -137,7 +137,7 @@ func TestSitemapSortByLocation(t *testing.T) {
 
 func TestRemoveURL(t *testing.T) {
 
-	sm := sitemap.New()
+	sm := sitemap.NewSitemap()
 	sm.AppendURL(sitemap.URL{Location: "https://example.com/0"})
 	sm.AppendURL(sitemap.URL{Location: "https://example.com/1"})
 	sm.AppendURL(sitemap.URL{Location: "https://example.com/2"})
@@ -171,4 +171,52 @@ func TestRemoveURL(t *testing.T) {
 		t.Fatalf("Failed to remove the /1 url\n")
 	}
 
+}
+
+func TestSitemapFetchIndex(t *testing.T) {
+
+	sm, err := sitemap.Fetch("https://developer.mozilla.org/sitemap.xml")
+	if err != nil {
+		t.Fatalf("Failed to fetch: %s\n", err)
+	}
+
+	if !sm.IsIndex() {
+		t.Fatalf("FAIL: sitemap must be Index: %#v\n", sm)
+	}
+
+	if sm.Size() < 10 {
+		t.Logf("FAIL: invalid number of sitemaps: %d\n", sm.Size())
+	}
+}
+
+func TestSitemapFetchURLSet(t *testing.T) {
+
+	sm, err := sitemap.Fetch("https://gorbe.io/en/sitemap.xml")
+	if err != nil {
+		t.Fatalf("Failed to fetch: %s\n", err)
+	}
+
+	if sm.IsIndex() {
+		t.Fatalf("FAIL: sitemap must not be Index: %#v\n", sm)
+	}
+
+	if sm.Size() < 10 {
+		t.Logf("FAIL: invalid number of sitemaps: %d\n", sm.Size())
+	}
+}
+
+func TestSitemapFetchURLSetGzip(t *testing.T) {
+
+	sm, err := sitemap.Fetch("https://developer.mozilla.org/sitemaps/en-us/sitemap.xml.gz")
+	if err != nil {
+		t.Fatalf("Failed to fetch: %s\n", err)
+	}
+
+	if sm.IsIndex() {
+		t.Fatalf("FAIL: sitemap must not be Index: %#v\n", sm)
+	}
+
+	if sm.Size() < 10 {
+		t.Logf("FAIL: invalid number of sitemaps: %d\n", sm.Size())
+	}
 }

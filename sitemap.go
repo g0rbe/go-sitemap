@@ -2,8 +2,12 @@ package sitemap
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/xml"
 	"fmt"
+	"io"
+	"mime"
+	"net/http"
 	"slices"
 	"strings"
 	"sync"
@@ -21,8 +25,73 @@ type Sitemap struct {
 	m       *sync.RWMutex
 }
 
-func New() Sitemap {
+func NewSitemap() Sitemap {
 	return Sitemap{m: new(sync.RWMutex)}
+}
+
+func ParseXML(data []byte) (Sitemap, error) {
+
+	sm := NewSitemap()
+
+	err := xml.Unmarshal(data, &sm)
+
+	return sm, err
+}
+
+func ReadXML(r io.Reader) (Sitemap, error) {
+
+	sm := NewSitemap()
+
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return sm, fmt.Errorf("failed to read: %w", err)
+	}
+
+	err = xml.Unmarshal(data, &sm)
+
+	return sm, err
+}
+
+func ReadXMLGZ(r io.Reader) (Sitemap, error) {
+
+	gzReader, err := gzip.NewReader(r)
+	if err != nil {
+		return Sitemap{}, fmt.Errorf("failed to cxreate gzip reader: %w", err)
+	}
+
+	return ReadXML(gzReader)
+}
+
+// Fetch fetches the Sitemap from url.
+//
+// If fetch fails, returns the status code as an error (eg.: "404").
+func Fetch(url string) (Sitemap, error) {
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return Sitemap{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return Sitemap{}, fmt.Errorf("%d", resp.StatusCode)
+	}
+
+	mediatype, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+	if err != nil {
+		return Sitemap{}, fmt.Errorf("failed to parse Content-Type: %w", err)
+	}
+
+	switch mediatype {
+	case "text/xml":
+		return ReadXML(resp.Body)
+	case "application/xml":
+		return ReadXML(resp.Body)
+	case "application/x-gzip":
+		return ReadXMLGZ(resp.Body)
+	default:
+		return Sitemap{}, fmt.Errorf("unknown Content-Type: %s", mediatype)
+	}
 }
 
 func (s Sitemap) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
@@ -42,6 +111,8 @@ func (s *Sitemap) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 	switch start.Name.Local {
 	case "sitemapindex":
+
+		s.isIndex = true
 
 		v := Index{}
 
