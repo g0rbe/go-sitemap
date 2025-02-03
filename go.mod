@@ -2,7 +2,7 @@ module git.gorbe.io/go/sitemap
 
 go 1.23.2
 
-require github.com/gocolly/colly/v2 v2.1.0
+require github.com/gocolly/colly v1.2.0
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.1 // indirect
@@ -19,5 +19,5 @@ require (
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/protobuf v1.36.2 // indirect
+	google.golang.org/protobuf v1.36.4 // indirect
 )
